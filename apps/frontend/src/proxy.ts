@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import {
   contentSecurityPolicyHeader,
+  frameAncestorsForPath,
   resolveApiOrigin,
   resolveContentSecurityPolicyMode,
 } from '@/shared/lib/content-security-policy'
@@ -24,12 +25,14 @@ export function proxy(request: NextRequest) {
   const isProduction = process.env.NODE_ENV === 'production'
   const nonce = createNonce()
   const mode = resolveContentSecurityPolicyMode(isProduction)
+  const frameAncestors = frameAncestorsForPath(request.nextUrl.pathname)
   const policyHeader = contentSecurityPolicyHeader(
     {
       isProduction,
       apiOrigin: resolveApiOrigin(process.env.NEXT_PUBLIC_API_URL),
       nonce,
       upgradeInsecureRequests: isExternallyHttps(request),
+      frameAncestors,
     },
     mode,
   )
@@ -46,6 +49,9 @@ export function proxy(request: NextRequest) {
     request: { headers: requestHeaders },
   })
   response.headers.set(policyHeader.key, policyHeader.value)
+  if (frameAncestors === "'none'") {
+    response.headers.set('X-Frame-Options', 'DENY')
+  }
 
   // A nonce is valid for exactly one response. Do not let a reverse proxy/CDN
   // cache HTML carrying a nonce and replay it to later requests.
