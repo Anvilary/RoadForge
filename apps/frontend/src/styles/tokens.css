@@ -78,7 +78,6 @@
   --container: 1120px;
   --header-h: 118px;
   --site-header-height: 118px;
-  --site-footer-height: 56px;
 
   /* Shared chrome surface, blur, and orange border glow (Anvilary design language) */
   --chrome-surface: color-mix(in oklab, var(--bg) 88%, transparent);

@@ -1,6 +1,5 @@
 'use client'
 
-import { useLayoutEffect, useRef } from 'react'
 import Image from 'next/image'
 import {
   ProblemReportLink,
@@ -8,37 +7,10 @@ import {
 } from '@/shared/ui/ProblemReportLink'
 
 export function SiteFooter() {
-  const footerRef = useRef<HTMLElement>(null)
   const year = new Date().getFullYear()
 
-  useLayoutEffect(() => {
-    const footer = footerRef.current
-    if (!footer) return
-
-    const updateFooterHeight = () => {
-      document.documentElement.style.setProperty(
-        '--site-footer-height',
-        `${footer.getBoundingClientRect().height}px`,
-      )
-    }
-
-    updateFooterHeight()
-    const observer =
-      typeof ResizeObserver === 'undefined'
-        ? null
-        : new ResizeObserver(updateFooterHeight)
-    observer?.observe(footer)
-    window.addEventListener('resize', updateFooterHeight)
-
-    return () => {
-      observer?.disconnect()
-      window.removeEventListener('resize', updateFooterHeight)
-      document.documentElement.style.removeProperty('--site-footer-height')
-    }
-  }, [])
-
   return (
-    <footer ref={footerRef} className="site-footer">
+    <footer className="site-footer">
       <div className="row">
         <a
           href="https://anvilary.tools/"
@@ -79,15 +51,17 @@ export function SiteFooter() {
           Local-first. Portable. Self-hostable. Fork/self-host for team use
         </span>
         <span className="flex-1" />
-        <a
-          href="https://github.com/Anvilary/RoadForge#license"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Non-commercial source available
-        </a>
-        <span className="dot" aria-hidden="true">·</span>
-        <span>© {year} Anvilary Tools</span>
+        <div className="footer-legal">
+          <a
+            href="https://github.com/Anvilary/RoadForge#license"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Non-commercial source available
+          </a>
+          <span className="dot" aria-hidden="true">·</span>
+          <span>© {year} Anvilary Tools</span>
+        </div>
       </div>
     </footer>
   )

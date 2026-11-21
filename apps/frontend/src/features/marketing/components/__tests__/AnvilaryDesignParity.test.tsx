@@ -66,7 +66,7 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     expect(header?.querySelector('[data-testid="roadmap-switcher"]')).not.toBeNull()
   })
 
-  it('renders marketing footer with fixed chrome structure, parent Anvilary logo, and required links', () => {
+  it('renders marketing footer with document flow chrome structure, parent Anvilary logo, and required links', () => {
     act(() => {
       root.render(<SiteFooter />)
     })
@@ -104,6 +104,14 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     expect(reportLink).not.toBeNull()
     expect(footer?.textContent).toContain('©')
     expect(footer?.textContent).toContain('Anvilary Tools')
+
+    // Legal group unites licensing and dynamic copyright together
+    const legalGroup = footer?.querySelector('.footer-legal')
+    expect(legalGroup).not.toBeNull()
+    expect(legalGroup?.querySelector('a[href="https://github.com/Anvilary/RoadForge#license"]')).not.toBeNull()
+    expect(legalGroup?.textContent).toContain('Non-commercial source available')
+    expect(legalGroup?.textContent).toContain(String(new Date().getFullYear()))
+    expect(legalGroup?.textContent).toContain('Anvilary Tools')
   })
 
   it('verifies stylesheet geometry, surface, blur, and glow rules', () => {
@@ -131,19 +139,16 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     expect(siteCss).toContain('.site-header::before')
     expect(siteCss).toContain('background: var(--chrome-border-glow);')
 
-    // Footer fixed layout and glow
-    expect(siteCss).toContain('position: fixed;')
-    expect(siteCss).toContain('bottom: 0;')
-    expect(siteCss).toContain('z-index: 40;')
+    // Footer document flow layout and glow (not fixed)
+    expect(siteCss).toContain('position: relative;')
+    expect(siteCss).not.toMatch(/footer\.site-footer[^{]*\{[^}]*position:\s*fixed/)
     expect(siteCss).toContain('background: var(--chrome-surface-footer);')
     expect(siteCss).toContain('.site-footer::after')
     expect(siteCss).toContain('.site-footer::before')
+    expect(siteCss).toContain('.site-footer .footer-legal')
 
     // Navigation label underline
     expect(siteCss).toContain('.site-header nav a .nav-label::after')
-
-    // Page bottom clearance for fixed footer
-    expect(siteCss).toContain('padding-bottom: var(--site-footer-height, 56px);')
   })
 
   it('preserves workspace header isolation without applying marketing header styles', () => {

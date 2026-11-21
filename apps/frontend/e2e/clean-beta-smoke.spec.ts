@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { createRoadmap } from './helpers'
 
-const ISSUE_CHOOSER_URL = 'https://github.com/alteixeira20/RoadForge/issues/new/choose'
+const ISSUE_CHOOSER_URL = 'https://github.com/Anvilary/RoadForge/issues/new/choose'
 
 async function seedSyncedRoadmap(page: Page, role: 'owner' | 'editor' | 'viewer') {
   await page.addInitScript(({ seededRole }) => {

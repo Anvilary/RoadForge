@@ -30,7 +30,7 @@ describe('HelpPage', () => {
     const html = renderToStaticMarkup(<HelpPage />)
 
     expect(html).toContain(
-      'href="https://github.com/alteixeira20/RoadForge/issues/new/choose"',
+      'href="https://github.com/Anvilary/RoadForge/issues/new/choose"',
     )
     expect(html).toContain('target="_blank"')
     expect(html).toContain('rel="noopener noreferrer"')

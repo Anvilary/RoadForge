@@ -72,7 +72,7 @@ describe('Accessibility Unit Tests', () => {
       root.render(<SiteFooter />)
     })
 
-    const feedbackLink = container.querySelector('a[href="https://github.com/alteixeira20/RoadForge/issues/new/choose"]')
+    const feedbackLink = container.querySelector('a[href="https://github.com/Anvilary/RoadForge/issues/new/choose"]')
     expect(feedbackLink?.textContent).toBe('Report a problem')
     expect(feedbackLink?.getAttribute('target')).toBe('_blank')
     expect(feedbackLink?.getAttribute('rel')).toBe('noopener noreferrer')
@@ -115,7 +115,7 @@ describe('Accessibility Unit Tests', () => {
     // still routable and still linked from the site header.
     expect(container.querySelector('a[href="/help"]')).toBeNull()
     const reportLink = container.querySelector(
-      'a[href="https://github.com/alteixeira20/RoadForge/issues/new/choose"]',
+      'a[href="https://github.com/Anvilary/RoadForge/issues/new/choose"]',
     )
     expect(reportLink?.getAttribute('target')).toBe('_blank')
     expect(reportLink?.getAttribute('rel')).toBe('noopener noreferrer')
@@ -177,7 +177,7 @@ describe('Accessibility Unit Tests', () => {
     })
 
     const reportLinks = container.querySelectorAll(
-      'a[href="https://github.com/alteixeira20/RoadForge/issues/new/choose"]',
+      'a[href="https://github.com/Anvilary/RoadForge/issues/new/choose"]',
     )
     expect(reportLinks).toHaveLength(2)
     reportLinks.forEach((link) => {

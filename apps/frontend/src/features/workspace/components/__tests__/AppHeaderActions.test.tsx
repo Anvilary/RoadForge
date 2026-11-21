@@ -86,7 +86,7 @@ describe('workspace header actions', () => {
     expect(report).not.toBeNull()
     expect(report?.getAttribute('href')).toBe(ROADFORGE_ISSUE_CHOOSER_URL)
     expect(report?.getAttribute('href')).toBe(
-      'https://github.com/alteixeira20/RoadForge/issues/new/choose',
+      'https://github.com/Anvilary/RoadForge/issues/new/choose',
     )
     expect(report?.getAttribute('target')).toBe('_blank')
     expect(report?.getAttribute('rel')).toBe('noopener noreferrer')
