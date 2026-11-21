@@ -7,9 +7,10 @@ import { RoadmapSwitcher } from '@/features/roadmaps/components/RoadmapSwitcher'
 
 interface SiteHeaderProps {
   onCreate: () => void
+  activeNav?: 'home' | 'help'
 }
 
-export function SiteHeader({ onCreate }: SiteHeaderProps) {
+export function SiteHeader({ onCreate, activeNav = 'home' }: SiteHeaderProps) {
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const headerRef = useRef<HTMLElement>(null)
@@ -47,6 +48,7 @@ export function SiteHeader({ onCreate }: SiteHeaderProps) {
   }, [])
 
   useEffect(() => {
+    if (activeNav === 'help') return
     const sections = ['how', 'features']
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null)
@@ -74,7 +76,7 @@ export function SiteHeader({ onCreate }: SiteHeaderProps) {
       window.removeEventListener('hashchange', syncHash)
       window.removeEventListener('popstate', syncHash)
     }
-  }, [])
+  }, [activeNav])
 
   return (
     <header
@@ -85,19 +87,23 @@ export function SiteHeader({ onCreate }: SiteHeaderProps) {
       <nav aria-label="Main">
         <a
           className={activeSection === 'how' ? 'active' : undefined}
-          href="#how"
+          href={activeNav === 'help' ? '/#how' : '#how'}
           aria-current={activeSection === 'how' ? 'page' : undefined}
         >
           <span className="nav-label">How it works</span>
         </a>
         <a
           className={activeSection === 'features' ? 'active' : undefined}
-          href="#features"
+          href={activeNav === 'help' ? '/#features' : '#features'}
           aria-current={activeSection === 'features' ? 'page' : undefined}
         >
           <span className="nav-label">Features</span>
         </a>
-        <a href="/help">
+        <a
+          className={activeNav === 'help' ? 'active' : undefined}
+          href="/help"
+          aria-current={activeNav === 'help' ? 'page' : undefined}
+        >
           <span className="nav-label">Help</span>
         </a>
       </nav>

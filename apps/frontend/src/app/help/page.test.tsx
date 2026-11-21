@@ -1,6 +1,19 @@
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import HelpPage from '@/app/help/page'
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+
+vi.mock('@/features/roadmaps/components/RoadmapSwitcher', () => ({
+  RoadmapSwitcher: () => <div data-testid="roadmap-switcher" />,
+}))
 
 describe('HelpPage', () => {
   it('covers the task-based user guide', () => {
