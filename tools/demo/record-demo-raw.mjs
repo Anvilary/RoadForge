@@ -69,7 +69,7 @@ async function startServer(port) {
   throw new Error(`Timed out waiting for server at ${url}`)
 }
 
-async function smoothMoveTo(page, targetX, targetY, steps = 22) {
+async function smoothMoveTo(page, targetX, targetY, steps = 15) {
   const currentPos = await page.evaluate(() => {
     const cur = document.getElementById('demo-cursor')
     if (cur && cur.style.display !== 'none') {
@@ -86,16 +86,16 @@ async function smoothMoveTo(page, targetX, targetY, steps = 22) {
     const x = startX + (targetX - startX) * ease
     const y = startY + (targetY - startY) * ease
     await page.mouse.move(x, y)
-    await sleep(14)
+    await sleep(12)
   }
 }
 
-async function smoothClick(page, locator, waitAfter = 300) {
+async function smoothClick(page, locator, waitAfter = 200) {
   await locator.scrollIntoViewIfNeeded()
   let box = await locator.boundingBox()
   if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
-    await sleep(40)
+    await sleep(30)
     box = await locator.boundingBox()
   }
   if (!box) {
@@ -103,27 +103,27 @@ async function smoothClick(page, locator, waitAfter = 300) {
   } else {
     const cx = box.x + box.width / 2
     const cy = box.y + box.height / 2
-    await smoothMoveTo(page, cx, cy, 20)
-    await sleep(100) // Hover before click
+    await smoothMoveTo(page, cx, cy, 14)
+    await sleep(50) // Crisp, natural hover pause
     await page.mouse.down()
-    await sleep(65)
+    await sleep(45)
     await page.mouse.up()
   }
   await sleep(waitAfter)
 }
 
 async function smoothType(page, locator, text) {
-  await smoothClick(page, locator, 140)
+  await smoothClick(page, locator, 100)
   for (let i = 0; i < text.length; i++) {
     const char = text[i]
     await page.keyboard.type(char)
     if (char === ' ') {
-      await sleep(160 + Math.floor(Math.random() * 60))
+      await sleep(110 + Math.floor(Math.random() * 40))
     } else {
-      await sleep(85 + Math.floor(Math.random() * 40))
+      await sleep(55 + Math.floor(Math.random() * 25))
     }
   }
-  await sleep(350)
+  await sleep(220)
 }
 
 async function ensurePhaseOpen(page, phaseLocator) {
@@ -131,13 +131,13 @@ async function ensurePhaseOpen(page, phaseLocator) {
   let box = await phaseLocator.boundingBox()
   if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
-    await sleep(40)
+    await sleep(30)
   }
   const isExpanded = await phaseLocator.evaluate((el) => el.classList.contains('expanded'))
   if (!isExpanded) {
     const toggleBtn = phaseLocator.locator('.phase-toggle-btn')
     if (await toggleBtn.isVisible()) {
-      await smoothClick(page, toggleBtn, 250)
+      await smoothClick(page, toggleBtn, 180)
     }
   }
 }
@@ -147,13 +147,13 @@ async function ensurePhaseCollapsed(page, phaseLocator) {
   let box = await phaseLocator.boundingBox()
   if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
-    await sleep(40)
+    await sleep(30)
   }
   const isExpanded = await phaseLocator.evaluate((el) => el.classList.contains('expanded'))
   if (isExpanded) {
     const toggleBtn = phaseLocator.locator('.phase-toggle-btn')
     if (await toggleBtn.isVisible()) {
-      await smoothClick(page, toggleBtn, 250)
+      await smoothClick(page, toggleBtn, 180)
     }
   }
 }
@@ -163,13 +163,13 @@ async function toggleTask(page, taskRowLocator, shouldExpand = null) {
   let box = await taskRowLocator.boundingBox()
   if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
-    await sleep(40)
+    await sleep(30)
   }
   const toggleBtn = taskRowLocator.locator('.toggle-btn')
   const isExpanded = (await toggleBtn.getAttribute('aria-expanded')) === 'true'
   const target = shouldExpand !== null ? shouldExpand : !isExpanded
   if (isExpanded !== target) {
-    await smoothClick(page, toggleBtn, 250)
+    await smoothClick(page, toggleBtn, 180)
   }
 }
 
@@ -181,7 +181,7 @@ export async function recordDemoRaw() {
   const port = await availablePort()
   const { serverProcess, url: BASE_URL } = await startServer(port)
 
-  console.log('Launching browser to record authentic native Full HD product demonstration...')
+  console.log('Launching browser to record balanced Full HD product demonstration...')
   const browser = await chromium.launch({
     headless: true,
   })
@@ -278,53 +278,53 @@ export async function recordDemoRaw() {
   }
 
   // =========================================================================
-  // ACT 1: CREATE THE PROJECT (0s - ~20s)
+  // ACT 1: CREATE THE PROJECT (0s - ~16s)
   // =========================================================================
   markScene('act1_start')
   await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' })
-  await sleep(1500) // Clear initial pause on hero
+  await sleep(1000) // Clear initial pause on hero
 
   // Move smoothly to CTA and click
   const ctaBtn = page.locator('.hero .btn.primary, button:has-text("Hosted demo"), button:has-text("Create roadmap")').first()
-  await smoothClick(page, ctaBtn, 600)
+  await smoothClick(page, ctaBtn, 400)
 
   const wizard = page.getByRole('dialog', { name: 'Create your roadmap' })
   await wizard.waitFor({ state: 'visible' })
-  await sleep(800) // Give viewer time to recognize the creation dialog
+  await sleep(500) // Give viewer time to recognize the creation dialog
 
   const displayNameInput = wizard.getByLabel('Your display name', { exact: true })
   await smoothType(page, displayNameInput, 'Developer')
-  await sleep(500)
+  await sleep(300)
 
   const roadmapTitleInput = wizard.getByLabel('Roadmap title', { exact: true })
   await smoothType(page, roadmapTitleInput, 'Launching a Developer Tool')
-  await sleep(1200) // Pause so viewer can clearly read the entered title
+  await sleep(800) // Pause so viewer can clearly read the entered title
 
   const continueBtn = wizard.getByRole('button', { name: /Continue/ })
-  await smoothClick(page, continueBtn, 600)
+  await smoothClick(page, continueBtn, 400)
 
   const startingPointStep = page.getByRole('dialog', { name: 'Start simple' })
   await startingPointStep.waitFor({ state: 'visible' })
-  await sleep(1000)
+  await sleep(600)
 
   const createRoadmapSubmit = startingPointStep.getByRole('button', { name: 'Create roadmap', exact: true })
-  await smoothClick(page, createRoadmapSubmit, 800)
+  await smoothClick(page, createRoadmapSubmit, 600)
 
   await page.waitForURL(/\/workspace\?roadmap=/, { timeout: 15000 })
-  await sleep(1000)
+  await sleep(600)
 
   // Cleanly dismiss the onboarding welcome banner to maximize workspace clarity and vertical space
   const welcomeDismissBtn = page.getByRole('button', { name: 'Dismiss welcome onboarding banner' })
   if (await welcomeDismissBtn.isVisible()) {
-    await smoothClick(page, welcomeDismissBtn, 500)
+    await smoothClick(page, welcomeDismissBtn, 350)
   }
 
   // Hold on the clean initial workspace
-  await sleep(3000)
+  await sleep(1800)
   markScene('act1_end')
 
   // =========================================================================
-  // ACT 2: STRUCTURE THE ROADMAP (20s - ~55s)
+  // ACT 2: STRUCTURE THE ROADMAP (16s - ~42s)
   // =========================================================================
   markScene('act2_start')
   const addPhaseBtn = page.getByRole('button', { name: 'Add another phase', exact: true })
@@ -332,12 +332,12 @@ export async function recordDemoRaw() {
   // RoadForge creates "Planning" by default. We add "Development", "Testing", "Release"
   const phaseNames = ['Development', 'Testing', 'Release']
   for (const name of phaseNames) {
-    await smoothClick(page, addPhaseBtn, 400)
+    await smoothClick(page, addPhaseBtn, 300)
     const phaseInput = page.locator('.phase-name-input')
     await phaseInput.waitFor({ state: 'visible' })
     await smoothType(page, phaseInput, name)
     await page.keyboard.press('Enter')
-    await sleep(2200) // Deliberate pause so viewer absorbs each new phase card and color accent
+    await sleep(1400) // Deliberate pause so viewer absorbs each new phase card and color accent
 
     // Strict validation: default placeholder must be completely replaced
     const createdPhaseHeader = page.locator('.phase-head').last()
@@ -359,14 +359,14 @@ export async function recordDemoRaw() {
   // Expand all phases
   const expandAllBtn = page.getByRole('button', { name: /Expand all/ })
   if (await expandAllBtn.isVisible()) {
-    await smoothClick(page, expandAllBtn, 500)
+    await smoothClick(page, expandAllBtn, 350)
   }
   // Hold to appreciate the 4-phase project architecture
-  await sleep(4000)
+  await sleep(2200)
   markScene('act2_end')
 
   // =========================================================================
-  // ACT 3: ADD TASKS AND SUBTASKS (55s - ~110s)
+  // ACT 3: ADD TASKS AND SUBTASKS (42s - ~95s)
   // =========================================================================
   markScene('act3_start')
   const phases = page.locator('.phase')
@@ -379,18 +379,18 @@ export async function recordDemoRaw() {
       if (i === 0) {
         const addFirstBtn = targetPhase.getByRole('button', { name: /Add first task/ })
         if (await addFirstBtn.isVisible()) {
-          await smoothClick(page, addFirstBtn, 250)
+          await smoothClick(page, addFirstBtn, 180)
         } else {
-          await smoothClick(page, targetPhase.locator('.add-task-btn'), 250)
+          await smoothClick(page, targetPhase.locator('.add-task-btn'), 180)
         }
       } else {
-        await smoothClick(page, targetPhase.locator('.add-task-btn'), 250)
+        await smoothClick(page, targetPhase.locator('.add-task-btn'), 180)
       }
       const draftInput = targetPhase.locator('.draft-task-input')
       await draftInput.waitFor({ state: 'visible' })
       await smoothType(page, draftInput, taskTitle)
       await page.keyboard.press('Enter')
-      await sleep(450)
+      await sleep(250)
     }
   }
 
@@ -401,38 +401,38 @@ export async function recordDemoRaw() {
     'Design core architecture',
     'Establish milestones',
   ])
-  await sleep(1000)
+  await sleep(600)
 
   // Step 2: Demonstrate Subtasks on Planning ("Define product requirements")
   await ensurePhaseOpen(page, planningPhase)
   const reqsHeader = planningPhase.locator('.task-row', { hasText: 'Define product requirements' }).first()
   await toggleTask(page, reqsHeader, true)
-  await sleep(1000)
+  await sleep(600)
 
   const addSubtaskBtn = page.getByRole('button', { name: 'Add subtask' })
   await addSubtaskBtn.waitFor({ state: 'visible' })
 
   // Add subtask 1
-  await smoothClick(page, addSubtaskBtn, 250)
+  await smoothClick(page, addSubtaskBtn, 180)
   const stInput1 = page.getByLabel('Subtask title')
   await smoothType(page, stInput1, 'Target developer personas')
   await page.getByRole('button', { name: 'Add', exact: true }).click()
-  await sleep(800)
+  await sleep(500)
 
   // Add subtask 2
-  await smoothClick(page, addSubtaskBtn, 250)
+  await smoothClick(page, addSubtaskBtn, 180)
   await smoothType(page, stInput1, 'Establish acceptance criteria')
   await page.getByRole('button', { name: 'Add', exact: true }).click()
-  await sleep(2200) // Pause to let viewer absorb subtask list and hierarchy
+  await sleep(1500) // Pause to let viewer absorb subtask list and hierarchy
 
   // Mark first subtask complete
   const personaCheck = page.getByRole('checkbox', {
     name: 'Mark subtask "Target developer personas" as complete',
   })
-  await smoothClick(page, personaCheck, 500)
-  await sleep(2200) // Pause to see subtask completion and progress update
+  await smoothClick(page, personaCheck, 350)
+  await sleep(1500) // Pause to see subtask completion and progress update
   await toggleTask(page, reqsHeader, false)
-  await sleep(1000)
+  await sleep(600)
 
   // Step 3: Create tasks in Development
   const devPhase = phases.nth(1)
@@ -441,31 +441,31 @@ export async function recordDemoRaw() {
     'Build local persistence',
     'Integrate core engine',
   ])
-  await sleep(1000)
+  await sleep(600)
 
   // Step 4: Demonstrate Subtasks on Development ("Implement frontend components")
   await ensurePhaseOpen(page, devPhase)
   const frontendTaskHeader = devPhase.locator('.task-row', { hasText: 'Implement frontend components' }).first()
   await toggleTask(page, frontendTaskHeader, true)
-  await sleep(1000)
+  await sleep(600)
 
-  await smoothClick(page, addSubtaskBtn, 250)
+  await smoothClick(page, addSubtaskBtn, 180)
   await smoothType(page, stInput1, 'Responsive hero layout')
   await page.getByRole('button', { name: 'Add', exact: true }).click()
-  await sleep(800)
+  await sleep(500)
 
-  await smoothClick(page, addSubtaskBtn, 250)
+  await smoothClick(page, addSubtaskBtn, 180)
   await smoothType(page, stInput1, 'Accessible navigation')
   await page.getByRole('button', { name: 'Add', exact: true }).click()
-  await sleep(2000)
+  await sleep(1500)
 
   const heroCheck = page.getByRole('checkbox', {
     name: 'Mark subtask "Responsive hero layout" as complete',
   })
-  await smoothClick(page, heroCheck, 500)
-  await sleep(2200) // Pause to see subtask complete
+  await smoothClick(page, heroCheck, 350)
+  await sleep(1500) // Pause to see subtask complete
   await toggleTask(page, frontendTaskHeader, false)
-  await sleep(1000)
+  await sleep(600)
 
   // Step 5: Populate Testing and Release deliverables briskly through real UI actions
   await addTasksToPhase(2, [
@@ -473,38 +473,38 @@ export async function recordDemoRaw() {
     'Validate accessibility',
     'Verify production builds',
   ])
-  await sleep(800)
+  await sleep(500)
 
   await addTasksToPhase(3, [
     'Prepare documentation',
     'Finalize deployment',
     'Publish the release',
   ])
-  await sleep(1200)
+  await sleep(800)
 
   // Step 6: Reveal the populated roadmap
   await page.evaluate(() => window.scrollTo({ top: 120, behavior: 'smooth' }))
-  await sleep(4000) // Hold to appreciate the fully populated 4-phase engineering roadmap
+  await sleep(2500) // Hold to appreciate the fully populated 4-phase engineering roadmap
   markScene('act3_end')
 
   // =========================================================================
-  // ACT 4: PLANNING INTELLIGENCE (110s - ~160s)
+  // ACT 4: PLANNING INTELLIGENCE (95s - ~140s)
   // =========================================================================
   markScene('act4_start')
   // 1. Task: Design core architecture -> High Complexity, Tag: Core, Rich Markdown
   await ensurePhaseOpen(page, planningPhase)
   const archTaskHeader = planningPhase.locator('.task-row', { hasText: 'Design core architecture' }).first()
   await toggleTask(page, archTaskHeader, true)
-  await sleep(800)
+  await sleep(500)
 
   const editDetailsBtn = page.getByRole('button', { name: 'Edit details' })
   await editDetailsBtn.waitFor({ state: 'visible' })
-  await smoothClick(page, editDetailsBtn, 400)
+  await smoothClick(page, editDetailsBtn, 300)
 
   const complexitySelect = page.locator('select[id^="edit-complexity-"]')
-  await smoothClick(page, complexitySelect, 300)
+  await smoothClick(page, complexitySelect, 200)
   await complexitySelect.selectOption('high')
-  await sleep(1200) // Pause to show complexity selected as High
+  await sleep(800) // Pause to show complexity selected as High
 
   const descTextarea = page.locator('textarea[id^="edit-desc-"]')
   await smoothType(
@@ -512,57 +512,57 @@ export async function recordDemoRaw() {
     descTextarea,
     '### Architecture\n- Local-first persistence\n- Realtime sync\n',
   )
-  await sleep(500)
+  await sleep(350)
 
   const tagInput = page.locator('.tag-chip-input')
   if (await tagInput.isVisible()) {
     await smoothType(page, tagInput, 'Core')
     await page.keyboard.press('Enter')
-    await sleep(800)
+    await sleep(500)
   }
 
   const saveBtn = page.getByRole('button', { name: 'Save', exact: true })
-  await smoothClick(page, saveBtn, 500)
+  await smoothClick(page, saveBtn, 350)
   await toggleTask(page, archTaskHeader, false)
-  await sleep(2500) // Pause to clearly see red High complexity badge and Core tag chip
+  await sleep(1800) // Pause to clearly see red High complexity badge and Core tag chip
 
   // 2. Tag "Engine" on Persistence task
   await ensurePhaseOpen(page, devPhase)
   const engineTaskHeader = devPhase.locator('.task-row', { hasText: 'Build local persistence' }).first()
   await toggleTask(page, engineTaskHeader, true)
-  await smoothClick(page, editDetailsBtn, 400)
+  await smoothClick(page, editDetailsBtn, 300)
   if (await tagInput.isVisible()) {
     await smoothType(page, tagInput, 'Engine')
     await page.keyboard.press('Enter')
-    await sleep(800)
+    await sleep(500)
   }
-  await smoothClick(page, saveBtn, 500)
+  await smoothClick(page, saveBtn, 350)
   await toggleTask(page, engineTaskHeader, false)
-  await sleep(2000) // Pause to clearly see Engine tag chip
+  await sleep(1500) // Pause to clearly see Engine tag chip
 
   // 3. Dependency: "Publish the release" depends on "Verify production builds"
   const releasePhase = phases.nth(3)
   await ensurePhaseOpen(page, releasePhase)
   const publishTaskHeader = releasePhase.locator('.task-row', { hasText: 'Publish the release' }).first()
   await toggleTask(page, publishTaskHeader, true)
-  await sleep(800)
+  await sleep(500)
 
   const linkDepBtn = page.getByRole('button', { name: 'Link dependency' })
   await linkDepBtn.waitFor({ state: 'visible' })
-  await smoothClick(page, linkDepBtn, 400)
+  await smoothClick(page, linkDepBtn, 300)
 
   markScene('act4_dep_link')
   const depSearchInput = page.getByLabel('Search tasks to link')
   await smoothType(page, depSearchInput, 'production builds')
-  await sleep(500)
+  await sleep(350)
 
   const depOption = page.locator('.task-option', { hasText: 'Verify production builds' }).first()
-  await smoothClick(page, depOption, 500)
+  await smoothClick(page, depOption, 350)
   await toggleTask(page, publishTaskHeader, false)
 
   // Hold to showcase the amber Blocked indicator on "Publish the release"
   markScene('act4_blocked_hold')
-  await sleep(3500) // Deliberate hold so viewer understands the blocked state
+  await sleep(2500) // Deliberate hold so viewer understands the blocked state
 
   // 4. Progress and Unblocking: Complete Testing tasks
   markScene('act4_unblock_start')
@@ -572,79 +572,130 @@ export async function recordDemoRaw() {
   const unitCheck = page.getByRole('checkbox', {
     name: 'Mark task "Write automated tests" as complete',
   })
-  await smoothClick(page, unitCheck, 600)
-  await sleep(1800) // See Testing progress bar advance
+  await smoothClick(page, unitCheck, 400)
+  await sleep(1200) // See Testing progress bar advance
 
   const a11yCheck = page.getByRole('checkbox', {
     name: 'Mark task "Validate accessibility" as complete',
   })
-  await smoothClick(page, a11yCheck, 600)
-  await sleep(1800) // See Testing progress bar advance further
+  await smoothClick(page, a11yCheck, 400)
+  await sleep(1200) // See Testing progress bar advance further
 
   // Complete the prerequisite: "Verify production builds"
   const buildCheck = page.getByRole('checkbox', {
     name: 'Mark task "Verify production builds" as complete',
   })
-  await smoothClick(page, buildCheck, 800)
+  await smoothClick(page, buildCheck, 500)
 
   // Watch the amber Blocked status on "Publish the release" clear to ready!
-  await sleep(3500) // Deliberate hold to watch blocker resolve and clear!
+  await sleep(2500) // Deliberate hold to watch blocker resolve and clear!
 
   // Complete "Publish the release" in Release phase -> Watch overall progress leap forward!
   await ensurePhaseOpen(page, releasePhase)
   const pubCheck = page.getByRole('checkbox', {
     name: 'Mark task "Publish the release" as complete',
   })
-  await smoothClick(page, pubCheck, 800)
+  await smoothClick(page, pubCheck, 500)
 
   // Pause to appreciate overall progress and completion
-  await sleep(3000)
+  await sleep(2200)
   markScene('act4_end')
 
   // =========================================================================
-  // ACT 5: FINAL SHOWCASE (160s - ~190s)
+  // ACT 5: FINAL SHOWCASE & TOP-TO-BOTTOM OVERVIEW (140s - ~200s)
   // =========================================================================
   markScene('act5_start')
   // 1. Brief Export interaction demonstrating data portability
   const ioBtn = page.getByRole('button', { name: 'Import / Export' })
-  await smoothClick(page, ioBtn, 500)
+  await smoothClick(page, ioBtn, 400)
   const downloadJsonBtn = page.getByRole('button', { name: 'Download JSON' })
   await downloadJsonBtn.waitFor({ state: 'visible' })
-  await sleep(3000) // Clear demonstration of export options
+  await sleep(2200) // Clear demonstration of export options
 
   // Close export modal cleanly
   const closeIoBtn = page.getByRole('button', { name: 'Close modal' }).or(page.locator('.modal-close')).first()
   if (await closeIoBtn.isVisible()) {
-    await smoothClick(page, closeIoBtn, 400)
+    await smoothClick(page, closeIoBtn, 300)
   } else {
     await page.keyboard.press('Escape')
-    await sleep(400)
+    await sleep(300)
   }
-  await sleep(1800) // Ensure modal is completely closed
+  await sleep(1000) // Ensure modal is completely closed
 
-  // 2. Compose the final 4-phase master showcase
-  // Collapse Phase 0 (Planning - done), Phase 1 (Development - done), and Phase 2 (Testing - done)
-  // Release remains expanded, showing deliverables and completed status
-  // All four phases (Planning, Development, Testing, Release) fit simultaneously within the 1080p frame!
+  // 2. Continuous Top-to-Bottom Smooth Scroll Showcase (for README GIF and Showcase)
+  // Ensure all 4 phases are expanded and tasks are clean
+  for (let i = 0; i < 4; i++) {
+    await ensurePhaseOpen(page, phases.nth(i))
+    for (const tRow of await phases.nth(i).locator('.task-row').all()) {
+      const btn = tRow.locator('.toggle-btn')
+      if ((await btn.getAttribute('aria-expanded')) === 'true') {
+        await smoothClick(page, btn, 120)
+      }
+    }
+  }
+
+  // Scroll to absolute top
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await sleep(500)
+
+  // Park cursor off-screen / out of the way before scroll showcase starts
+  const cursorHidden = await page.evaluate(() => {
+    const cur = document.getElementById('demo-cursor')
+    if (cur) cur.style.display = 'none'
+    return true
+  })
+
+  // Mark start of dedicated README GIF scroll sequence
+  markScene('scroll_showcase_start')
+  await sleep(1500) // Initial hold at top: roadforge branding, title, progress, Planning visible
+
+  // Smooth continuous downward scroll: 823px over ~10 seconds (~82px per second)
+  const scrollTotalDistance = 825
+  const scrollSteps = 200
+  const stepDelay = 45 // 200 * 45ms = 9.0s smooth travel
+  for (let s = 1; s <= scrollSteps; s++) {
+    const fraction = s / scrollSteps
+    // Linear / subtle ease-in-out scroll
+    const currentY = scrollTotalDistance * fraction
+    await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), currentY)
+    await sleep(stepDelay)
+  }
+
+  // Hold at bottom: Release phase, completed deliverables, final structure
+  await sleep(2000)
+  markScene('scroll_showcase_end')
+
+  // 3. Compose the balanced 4-phase beauty showcase
+  // Restore cursor
+  await page.evaluate(() => {
+    const cur = document.getElementById('demo-cursor')
+    if (cur) {
+      cur.style.display = 'block'
+      cur.style.left = '1800px'
+      cur.style.top = '1000px'
+    }
+  })
+
+  // Collapse Phase 0, 1, 2 headers so all four phases fit simultaneously in 1080p frame
   await ensurePhaseCollapsed(page, phases.nth(0))
-  await sleep(300)
+  await sleep(200)
   await ensurePhaseCollapsed(page, phases.nth(1))
-  await sleep(300)
+  await sleep(200)
   await ensurePhaseCollapsed(page, phases.nth(2))
-  await sleep(300)
+  await sleep(200)
 
-  // Ensure Release is open and any individual expanded task details in Release are collapsed to keep it compact
+  // Ensure Release remains open and compact
   await ensurePhaseOpen(page, phases.nth(3))
   for (const tRow of await phases.nth(3).locator('.task-row').all()) {
     const btn = tRow.locator('.toggle-btn')
     if ((await btn.getAttribute('aria-expanded')) === 'true') {
-      await smoothClick(page, btn, 200)
+      await smoothClick(page, btn, 120)
     }
   }
 
-  // Smooth scroll to top so all four phases and header are visible
+  // Smooth scroll back to top for beauty showcase
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
-  await sleep(1000)
+  await sleep(800)
 
   // Programmatically verify all 4 phases fit in the viewport
   for (let i = 0; i < 4; i++) {
@@ -656,13 +707,9 @@ export async function recordDemoRaw() {
     }
   }
 
-  // Park cursor smoothly in neutral bottom-right area out of the way
-  await smoothMoveTo(page, 1800, 1000, 16)
-  await sleep(1200)
-
-  // 3. Final Beauty Hold (14.0 seconds steady hold)
+  // Final Beauty Hold (12.0 seconds steady hold)
   markScene('beauty_hold')
-  await sleep(14000)
+  await sleep(12000)
   markScene('act5_end')
 
   const totalRawDuration = (Date.now() - sceneManifest.startedAt) / 1000

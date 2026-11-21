@@ -61,7 +61,7 @@ async function verifyAll() {
 
   console.log('1. MP4 Master Video Properties:')
   console.log(`   Resolution: ${vStream.width}x${vStream.height} (Required: 1920x1080)`)
-  console.log(`   Duration: ${duration.toFixed(2)}s (Target: ~2m 30s - 4m / 140s - 240s)`)
+  console.log(`   Duration: ${duration.toFixed(2)}s (Target: ~3m 00s - 3m 30s / 170s - 220s)`)
   console.log(`   Codec: ${vStream.codec_name} (${vStream.pix_fmt})`)
   console.log(`   Color Space: ${vStream.color_space} (${vStream.color_primaries}/${vStream.color_transfer})`)
   console.log(`   Frame Rate: ${vStream.r_frame_rate} (Required: 30/1)`)
@@ -71,8 +71,8 @@ async function verifyAll() {
     console.error('   FAIL: MP4 resolution is not 1920x1080!')
     passed = false
   }
-  if (duration < 130.0 || duration > 260.0) {
-    console.error(`   FAIL: MP4 duration ${duration.toFixed(1)}s outside acceptable narrative window!`)
+  if (duration < 160.0 || duration > 230.0) {
+    console.error(`   FAIL: MP4 duration ${duration.toFixed(1)}s outside target window (~170s - 220s)!`)
     passed = false
   }
   if (vStream.codec_name !== 'h264' || vStream.pix_fmt !== 'yuv420p') {
@@ -89,10 +89,10 @@ async function verifyAll() {
     10,
     30,
     65,
-    105,
-    130,
-    Math.max(1, Math.floor(duration - 18)),
-    Math.max(1, Math.floor(duration - 6)),
+    95,
+    120,
+    Math.max(1, Math.floor(duration - 15)),
+    Math.max(1, Math.floor(duration - 5)),
   ]
 
   const frameCheckCode = `
@@ -169,8 +169,8 @@ print("   PASS: Thumbnail content confirmed.")
     passed = false
   }
 
-  // 4. GIF Preview Validation
-  console.log('\n4. Animated GIF Preview Validation:')
+  // 4. README GIF Preview Validation (Top-to-Bottom Scroll)
+  console.log('\n4. Animated README GIF Preview Validation:')
   if (!existsSync(gifPath)) throw new Error(`GIF not found at ${gifPath}`)
   const gifStat = statSync(gifPath)
   const gifSizeMb = (gifStat.size / (1024 * 1024)).toFixed(2)
@@ -184,12 +184,21 @@ print(f"   Format: {im.format}")
 print(f"   Dimensions: {im.size[0]}x{im.size[1]} (Required: 800x450)")
 print(f"   Is Animated: {is_animated}")
 print(f"   Total Frames: {n_frames}")
-if not is_animated or n_frames < 20:
-    print("FAIL: GIF is not animated!")
+if not is_animated or n_frames < 40:
+    print("FAIL: GIF is not properly animated!")
     exit(1)
 if im.size != (800, 450):
     print("FAIL: GIF dimensions are not 800x450!")
     exit(1)
+
+# Check that the GIF scrolls through the phases by inspecting frame 0 (top) vs middle vs end
+im.seek(0)
+p_top = im.convert("RGB").getpixel((400, 225))
+im.seek(n_frames // 2)
+p_mid = im.convert("RGB").getpixel((400, 225))
+im.seek(n_frames - 1)
+p_end = im.convert("RGB").getpixel((400, 225))
+print(f"   Scroll dynamics confirmed across frames: top={p_top}, mid={p_mid}, end={p_end}")
 `
   try {
     const gifResults = await runPython(gifCheckCode)

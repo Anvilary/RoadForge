@@ -94,11 +94,11 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   console.log(`  Codec: ${videoStream.codec_name} (${videoStream.pix_fmt})`)
   console.log(`  Color Space: ${videoStream.color_space} (${videoStream.color_primaries}/${videoStream.color_transfer})`)
   console.log(`  Frame rate: ${videoStream.r_frame_rate} (target 30/1)`)
-  console.log(`  Duration: ${finalDuration.toFixed(2)}s (target ~2m 30s to 3m 40s)`)
+  console.log(`  Duration: ${finalDuration.toFixed(2)}s (target ~3m 00s to 3m 30s)`)
   console.log(`  File size: ${finalSizeMb} MB`)
 
-  if (finalDuration < 130.0 || finalDuration > 260.0) {
-    throw new Error(`Master MP4 duration ${finalDuration.toFixed(1)}s outside acceptable narrative window!`)
+  if (finalDuration < 160.0 || finalDuration > 230.0) {
+    throw new Error(`Master MP4 duration ${finalDuration.toFixed(1)}s outside acceptable target window (~180s - 210s)!`)
   }
   if (videoStream.width !== 1920 || videoStream.height !== 1080) {
     throw new Error(`Master MP4 resolution ${videoStream.width}x${videoStream.height} is not 1920x1080!`)
@@ -106,10 +106,10 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
 
   // --- Step 2: Extract Thumbnail (1920x1080) ---
   console.log('\n--- Step 2: Extracting Beauty Showcase Thumbnail ---')
-  // Use steady beauty hold frame (6.0s before end, right in the middle of the 14s hold)
-  let thumbTime = Math.max(1, Math.floor(finalDuration - 6.0))
+  // Use steady beauty hold frame (5.0s before end, right in the middle of the 12s beauty hold)
+  let thumbTime = Math.max(1, Math.floor(finalDuration - 5.0))
   if (manifest?.scenes?.beauty_hold) {
-    thumbTime = Math.min(manifest.scenes.beauty_hold + 6.0, finalDuration - 3.0)
+    thumbTime = Math.min(manifest.scenes.beauty_hold + 5.0, finalDuration - 2.5)
   }
 
   await runCommand('ffmpeg', [
@@ -128,16 +128,17 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
     throw new Error(`Thumbnail resolution is not 1920x1080!`)
   }
 
-  // --- Step 3: High-Quality Looping Preview GIF (800x450, 10s) ---
-  console.log('\n--- Step 3: Generating Optimized Preview GIF ---')
-  // Choose the high-signal unblocking highlight (dependency creation, blocked badge, unblock, progress jump)
-  let gifStart = Math.max(10, Math.floor(finalDuration * 0.68))
-  if (manifest?.scenes?.act4_blocked_hold) {
-    gifStart = manifest.scenes.act4_blocked_hold - 1.5
+  // --- Step 3: High-Quality Looping README GIF (800x450, ~14s Top-to-Bottom Smooth Scroll) ---
+  console.log('\n--- Step 3: Generating Top-to-Bottom Roadmap Overview GIF ---')
+  // Extract continuous top-to-bottom scroll sequence from Act 5
+  let gifStart = Math.max(10, Math.floor(finalDuration * 0.85))
+  let gifDuration = 14.0
+  if (manifest?.scenes?.scroll_showcase_start && manifest?.scenes?.scroll_showcase_end) {
+    gifStart = manifest.scenes.scroll_showcase_start
+    gifDuration = Math.min(manifest.scenes.scroll_showcase_end - manifest.scenes.scroll_showcase_start, 15.0)
   }
-  const gifDuration = 10.0
 
-  console.log(`Extracting GIF highlight at ${gifStart.toFixed(1)}s (duration ${gifDuration}s)...`)
+  console.log(`Extracting GIF scroll showcase at ${gifStart.toFixed(1)}s (duration ${gifDuration.toFixed(1)}s)...`)
   await runCommand('ffmpeg', [
     '-y',
     '-ss', String(gifStart),
@@ -150,7 +151,7 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   let gifStat = statSync(targetGifPath)
   console.log(`  Initial GIF size: ${(gifStat.size / (1024 * 1024)).toFixed(2)} MB`)
 
-  // If over 4.5MB, optimize palette and frame rate for optimal GitHub delivery
+  // If over 4.5MB, optimize palette for optimal web delivery
   if (gifStat.size > 4.5 * 1024 * 1024) {
     console.log('Optimizing GIF palette and frame rate for optimal web delivery...')
     await runCommand('ffmpeg', [
