@@ -1,11 +1,42 @@
 /* ─── App header ───────────────────────────────────────────────────────────── */
 .app-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 32px;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in oklab, var(--bg) 90%, transparent);
-  backdrop-filter: blur(12px);
-  position: sticky; top: 0; z-index: var(--z-workspace-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  min-height: 72px;
+  padding: 0 32px;
+  box-sizing: border-box;
+  background: var(--chrome-surface);
+  backdrop-filter: blur(var(--chrome-blur));
+  -webkit-backdrop-filter: blur(var(--chrome-blur));
+  position: sticky;
+  top: 0;
+  z-index: var(--z-workspace-header);
+}
+
+.app-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--chrome-border-line);
+  pointer-events: none;
+}
+
+.app-header::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  transform: translateX(-50%);
+  width: clamp(240px, 40vw, 560px);
+  height: 8px;
+  background: var(--chrome-border-glow);
+  filter: blur(4px);
+  pointer-events: none;
 }
 
 /* ─── Start zone: brand + roadmap name ──────────────────────────────────── */
@@ -65,6 +96,18 @@
 .header-end > .roadmap-switcher {
   flex: 0 1 auto;
   min-width: 0;
+}
+
+.app-header .header-io-btn {
+  height: 36px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  line-height: 1;
+  gap: 6px;
+}
+.app-header .header-io-label {
+  display: inline-block;
+  line-height: 1;
 }
 
 .app-header .header-save-btn {
@@ -137,20 +180,22 @@
 
 /* ── 760px - tablet: tighten header spacing ─────────────────────────────── */
 @media (max-width: 760px) {
-  .app-header { padding: 12px 20px; }
+  .app-header { height: 64px; min-height: 64px; padding: 0 20px; }
   .app-header .header-save-btn { min-width: auto; }
 }
 
 /* ── 640px - mobile: hide roadmap name, tighten gaps ───────────────────── */
 @media (max-width: 640px) {
-  .app-header { padding: 10px 16px; }
+  .app-header { height: 60px; min-height: 60px; padding: 0 16px; }
   .header-start { gap: 8px; }
   .header-end { gap: 6px; }
   .header-roadmap-name { display: none; }
 }
 
-/* ── 600px - mobile: compact save button ────────────────────────────────── */
+/* ── 600px - mobile: compact save and io buttons ────────────────────────── */
 @media (max-width: 600px) {
+  .app-header .header-io-btn { width: 36px; min-width: 36px; padding: 0; justify-content: center; }
+  .app-header .header-io-label { display: none; }
   .app-header .header-save-btn { width: 36px; min-width: 36px; padding: 0; }
   .app-header .header-save-label { display: none; }
 }

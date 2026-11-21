@@ -151,11 +151,11 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     expect(siteCss).toContain('.site-header nav a .nav-label::after')
   })
 
-  it('preserves workspace header isolation without applying marketing header styles', () => {
+  it('aligns workspace header with Anvilary design system in compact dimensions (Option B)', () => {
     act(() => {
       root.render(
         <AppHeader
-          roadmapName="Isolated Workspace Roadmap"
+          roadmapName="Compact Workspace Roadmap"
           syncStatus="local"
           onIO={vi.fn()}
         />,
@@ -165,14 +165,24 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     const appHeader = container.querySelector('header.app-header')
     expect(appHeader).not.toBeNull()
 
-    // Workspace uses brand-mini, not brand-lg
-    const workspaceBrand = appHeader?.querySelector('.brand-mini')
+    // Workspace uses brand-compact, not brand-lg
+    const workspaceBrand = appHeader?.querySelector('.brand-compact')
     expect(workspaceBrand).not.toBeNull()
     expect(workspaceBrand?.classList.contains('brand-lg')).toBe(false)
 
-    // Logo size in workspace remains 28px
+    // Logo size in compact workspace header is 42px
     const img = workspaceBrand?.querySelector('img')
-    expect(img?.getAttribute('width')).toBe('28')
-    expect(img?.getAttribute('height')).toBe('28')
+    expect(img?.getAttribute('width')).toBe('42')
+    expect(img?.getAttribute('height')).toBe('42')
+
+    // App header CSS uses Anvilary chrome surface and orange glowing border line
+    const headerCss = readFileSync(
+      resolve(process.cwd(), 'src/styles/workspace/header.css'),
+      'utf8',
+    )
+    expect(headerCss).toContain('background: var(--chrome-surface);')
+    expect(headerCss).toContain('background: var(--chrome-border-line);')
+    expect(headerCss).toContain('background: var(--chrome-border-glow);')
+    expect(headerCss).toContain('height: 72px;')
   })
 })

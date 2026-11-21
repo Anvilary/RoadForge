@@ -18,6 +18,8 @@ export type IconName =
   | 'user'
   | 'import'
   | 'export'
+  | 'import-export'
+  | 'transfer'
   | 'link'
   | 'circle'
   | 'circle-check'
@@ -185,6 +187,13 @@ export function Icon({ name, size = 16, stroke = 'currentColor', strokeWidth = 1
       return (
         <svg {...s}>
           <path d="M12 21V9M7 14l5-5 5 5M5 3h14" />
+        </svg>
+      )
+    case 'import-export':
+    case 'transfer':
+      return (
+        <svg {...s}>
+          <path d="M7 16V4M3 8l4-4 4 4M17 8v12m-4-4 4 4 4-4" />
         </svg>
       )
     case 'link':

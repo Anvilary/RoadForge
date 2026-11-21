@@ -22,14 +22,30 @@ interface ModalProps {
   footer?: ReactNode
   width?: number
   role?: 'dialog' | 'alertdialog'
+  dismissible?: boolean
+  canDismiss?: () => boolean
 }
 
-export function Modal({ open, onClose, icon, title, sub, describedBy, children, footer, width, role = 'dialog' }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  icon,
+  title,
+  sub,
+  describedBy,
+  children,
+  footer,
+  width,
+  role = 'dialog',
+  dismissible = false,
+  canDismiss,
+}: ModalProps) {
   const titleId = useId()
   const descriptionId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
   const wasOpenRef = useRef(false)
+  const pointerDownOnScrimRef = useRef(false)
   if (open && !wasOpenRef.current && typeof document !== 'undefined') {
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement
       ? document.activeElement
@@ -57,6 +73,7 @@ export function Modal({ open, onClose, icon, title, sub, describedBy, children, 
       if (!isTopmost) return
       if (event.key === 'Escape') {
         if (event.defaultPrevented) return
+        if (canDismiss && !canDismiss()) return
         event.preventDefault()
         onClose()
         return
@@ -79,12 +96,41 @@ export function Modal({ open, onClose, icon, title, sub, describedBy, children, 
         }
       }
     }
-  }, [open, onClose])
+  }, [open, onClose, canDismiss])
+
+  const handleScrimPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    pointerDownOnScrimRef.current = event.target === event.currentTarget
+  }
+
+  const handleScrimClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const wasPointerDownOnScrim = pointerDownOnScrimRef.current
+    pointerDownOnScrimRef.current = false
+
+    if (!dismissible || !wasPointerDownOnScrim || event.target !== event.currentTarget) {
+      return
+    }
+
+    if (typeof document !== 'undefined') {
+      const openDialogs = document.querySelectorAll<HTMLElement>('[aria-modal="true"]')
+      const isTopmost = openDialogs.item(openDialogs.length - 1) === dialogRef.current
+      if (!isTopmost) return
+    }
+
+    if (canDismiss && !canDismiss()) {
+      return
+    }
+
+    onClose()
+  }
 
   if (!open || typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="modal-scrim">
+    <div
+      className="modal-scrim"
+      onPointerDown={handleScrimPointerDown}
+      onClick={handleScrimClick}
+    >
       <div
         ref={dialogRef}
         className="modal"

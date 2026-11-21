@@ -1,5 +1,6 @@
 /* ─── Roadmap layout ───────────────────────────────────────────────────────── */
 .workspace {
+  flex: 1 0 auto;
   max-width: var(--workspace-max-width);
   margin: 0 auto;
   padding: var(--workspace-y-pad-top) var(--workspace-x-pad) var(--workspace-y-pad-bottom);

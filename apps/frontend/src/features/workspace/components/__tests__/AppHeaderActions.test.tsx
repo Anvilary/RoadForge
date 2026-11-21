@@ -107,7 +107,7 @@ describe('workspace header actions', () => {
   it('orders the actions Import/Export, Report a problem, then Save', () => {
     const order = Array.from(
       container.querySelectorAll(
-        '.header-end > .iconbtn, .header-end > .header-report-link, .header-end > .header-save-btn',
+        '.header-end > .header-io-btn, .header-end > .iconbtn, .header-end > .header-report-link, .header-end > .header-save-btn',
       ),
     ).map((node) =>
       node.classList.contains('header-report-link')

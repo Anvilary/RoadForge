@@ -287,6 +287,7 @@ export function ShareModal({ open, onClose, onToast }: ShareModalProps) {
     <Modal
       open={open}
       onClose={onClose}
+      dismissible
       width={580}
       icon={{ name: 'share', plain: true }}
       title="Share this roadmap"

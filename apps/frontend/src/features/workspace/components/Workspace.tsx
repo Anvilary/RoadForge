@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ToastViewport } from '@/shared/ui/Toast'
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { EmberBackground } from '@/shared/ui/EmberBackground'
+import { SiteFooter } from '@/shared/ui/SiteFooter'
 import { AppHeader } from '@/features/workspace/components/AppHeader'
 import { WorkspaceHead } from './WorkspaceHead'
 import {
@@ -618,6 +619,8 @@ export function Workspace({ mode = 'owner', onCreateOwn }: WorkspaceProps) {
         )}
         </div>
       </div>
+
+      <SiteFooter />
 
       <WorkspaceModals
         showSave={showSave}

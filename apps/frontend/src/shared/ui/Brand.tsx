@@ -7,7 +7,7 @@ interface BrandProps {
   href?: string
   className?: string
   logoSize?: number
-  size?: 'md' | 'lg'
+  size?: 'md' | 'lg' | 'compact'
 }
 
 export function Brand({
@@ -17,8 +17,13 @@ export function Brand({
   size = 'md',
 }: BrandProps) {
   const isLg = size === 'lg'
-  const computedLogoSize = logoSize ?? (isLg ? 80 : 28)
-  const combinedClassName = [className, isLg ? 'brand-lg' : '']
+  const isCompact = size === 'compact'
+  const computedLogoSize = logoSize ?? (isLg ? 80 : isCompact ? 42 : 28)
+  const combinedClassName = [
+    className,
+    isLg ? 'brand-lg' : '',
+    isCompact ? 'brand-compact' : '',
+  ]
     .filter(Boolean)
     .join(' ')
 

@@ -176,6 +176,8 @@ export function IOModal({ open, onClose, onToast, onRoadmapImported }: IOModalPr
     <Modal
       open={open}
       onClose={handleClose}
+      dismissible
+      canDismiss={() => !isConfirming}
       width={560}
       icon={{ name: mode === 'export' ? 'export' : 'import', plain: true }}
       title="Import / Export roadmap"

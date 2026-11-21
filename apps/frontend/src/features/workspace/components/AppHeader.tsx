@@ -34,7 +34,7 @@ export function AppHeader({
   return (
     <header className="app-header">
       <div className="header-start">
-        <Brand href="/#hero" className="brand-mini" />
+        <Brand href="/#hero" size="compact" />
         {roadmapName && (
           <span className="header-roadmap-name">{roadmapName}</span>
         )}
@@ -42,8 +42,14 @@ export function AppHeader({
 
       <div className="header-end">
         {!readOnly && (
-          <button className="iconbtn" title="Import / Export" aria-label="Import / Export" onClick={onIO}>
-            <Icon name="export" size={16} />
+          <button
+            className="btn sm header-io-btn"
+            title="Import / Export"
+            aria-label="Import / Export"
+            onClick={onIO}
+          >
+            <Icon name="import-export" size={14} />
+            <span className="header-io-label">Import / Export</span>
           </button>
         )}
         <ProblemReportLink className="btn sm header-report-link" />

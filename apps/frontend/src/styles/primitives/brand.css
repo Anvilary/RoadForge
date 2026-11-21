@@ -55,6 +55,17 @@
   -webkit-text-fill-color: transparent;
 }
 
+.brand-compact {
+  gap: 12px;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.brand-compact .brand-logo {
+  width: 42px;
+  height: 42px;
+}
+
 .brand-lg {
   gap: 14px;
   font-size: 28px;
