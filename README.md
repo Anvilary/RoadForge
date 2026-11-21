@@ -29,7 +29,7 @@ outside the current license terms.
 
 ## See RoadForge in Action
 
-Watch RoadForge build a 4-phase engineering roadmap from scratch, organize milestones, break down deliverables into subtasks, link prerequisite dependencies, filter active items, track completion progress, and export portable backups:
+Watch RoadForge build a 4-phase engineering roadmap from scratch, organize milestones, break down deliverables into subtasks, link prerequisite dependencies, track completion progress, and export portable backups:
 
 [![RoadForge Product Demonstration](docs/media/roadforge-demo-preview.gif)](docs/media/roadforge-product-demo.mp4)
 

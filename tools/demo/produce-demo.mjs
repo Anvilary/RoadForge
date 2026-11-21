@@ -7,12 +7,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(__dirname, '../..')
 
 async function main() {
-  console.log('=== RoadForge Professional 60-Second Demonstration Production ===')
+  console.log('=== RoadForge Professional 90-Second Demonstration Production ===')
   console.log('Project root:', projectRoot)
   console.log('Starting Step 1: Recording authentic browser interactions...')
   const { rawVideoPath, sceneManifest } = await recordDemoRaw()
 
-  console.log('\nStarting Step 2: Postproduction assembly and encoding...')
+  console.log('\nStarting Step 2: Postproduction assembly, Lanczos scaling, and encoding...')
   const results = await assembleDemo(rawVideoPath)
 
   console.log('\n=== PRODUCTION COMPLETE ===')

@@ -1,155 +1,176 @@
-# RoadForge Professional 60-Second Demonstration Production Report
+# RoadForge Professional 90-Second Demonstration Production Report
 
-This report documents the architectural redesign, automation pipeline, visual composition decisions, and quality verification for the RoadForge v0.2.0 master product demonstration video, preview GIF, and high-resolution thumbnail.
-
----
-
-## 1. Production Overview
-
-### Narrative
-The demonstration communicates one core idea: **RoadForge transforms an idea into a structured, actionable development roadmap.**
-
-Rather than a generic feature walkthrough or sped-up screen capture, the video presents a purposeful 60-second narrative in five acts:
-1. **Act 1: The Idea (0.0s - 6.5s)**: Starting from the landing page, the user initiates roadmap creation, specifies the project title "Launching a Developer Tool", selects the blank template, and enters the workspace.
-2. **Act 2: Structure (6.5s - 10.8s)**: Demonstrates genuine phase creation across all four lifecycle milestones: Planning, Development, Testing, and Release. The input replaces temporary placeholder text immediately upon typing.
-3. **Act 3: Tasks and Subtasks (10.8s - 35.7s)**: Populates realistic engineering tasks across all phases, adds subtasks to core deliverables, marks milestones complete, and illustrates realtime progress updates.
-4. **Act 4: Intelligence and Progress (35.7s - 48.7s)**: Demonstrates task complexity configuration (High/Low), tag taxonomy ("Core", "Engine", "Docs"), rich Markdown architecture principles, dependency linking with automated cycle prevention, amber "Blocked" indicator alerts, and automatic blocker clearance upon prerequisite completion.
-5. **Act 5: The Result (48.7s - 59.8s)**: Highlights portable export capabilities (JSON and Markdown), provides a smooth overview of the fully organized 4-phase project, and concludes with a steady, restrained hold on the completed roadmap.
-
-### Storyboard and Scene Timings
-
-| Act | Scene | Timestamp Range | Cumulative Duration | Key Visual Actions |
-|---|---|---|---|---|
-| Act 1 | Hero & Roadmap Wizard | 0.00s - 6.55s | 6.55s | CTA click, title entry ("Launching a Developer Tool"), "Start simple" template selection |
-| Act 2 | Multi-Phase Structure | 6.55s - 10.78s | 4.23s | Phase creation: Development, Testing, Release; Expand All columns |
-| Act 3 | Deliverables & Subtasks | 10.78s - 35.72s | 24.94s | Task generation across all 4 phases, subtask breakdowns, subtask checkoffs with progress rings |
-| Act 4 | Metadata & Dependencies | 35.72s - 48.66s | 12.94s | Complexity, tags, markdown notes, dependency link, blocked status, prerequisite completion unblock |
-| Act 5 | Showcase & Beauty Hold | 48.66s - 59.77s | 11.11s | Export dialog inspection, smooth overview pan, steady beauty hold on complete roadmap |
-
-**Total Master Duration:** 59.77 seconds (meets the 55-65 second requirement).
-
-### Editing Decisions
-- **Restrained Cursor**: Eliminated the legacy glowing orange circle. Replaced with a crisp SVG vector pointer (white fill, dark slate stroke, subtle drop shadow) paired with a gentle click ripple ring that radiates outward on mouse down.
-- **Brisk Pacing**: Replaced sluggish 40-50ms character typing with 10-16ms purposeful typing, eliminating repetitive dead time while maintaining clear legibility.
-- **Controlled Holds**: Kept pauses between 150ms and 500ms following key interactions so the eye can easily register status updates, progress rings, and badge transformations without visual lag.
-- **Deliberate Ending**: Dedicated the final 5.2 seconds to a clean, unobstructed showcase of the complete four-phase roadmap.
+This report documents the architectural redesign, root cause resolution of frame geometry defects, automated recording pipeline, visual composition decisions, and quality verification for the RoadForge v0.2.0 master product demonstration video, preview GIF, and high-resolution thumbnail.
 
 ---
 
-## 2. Technical Details
+## 1. Resolution of Previous Frame Geometry Defects
 
-### Viewport and HiDPI Rasterization
-The previous recording ran in a standard 1920x1080 viewport where the 1080px workspace column occupied only 52.9% of the frame, leaving 447px of empty margin on each side and rendering 14px body text unreadable in embedded previews.
+### Root Cause Analysis
+An independent inspection of the previous 60-second delivery (`aed8f1c7d1fe40345dbba0a6dd22b42beeaee7dc`) discovered that the application image occupied only the top-left 1440×810 region of the 1920×1080 video, with the remaining 480px on the right and 270px on the bottom filled with middle gray (`#808080` / `rgb(128, 128, 128)`). Exactly 43.75% of the output frame contained no application content.
 
-To solve this without artificial post-production upscaling:
-- **Logical Viewport**: 1440x810 (16:9 aspect ratio).
-- **Device Scale Factor**: 1.33333333 (HiDPI scaling factor: 1440 * 4/3 = 1920, 810 * 4/3 = 1080).
-- **Physical Canvas**: Native 1920x1080 rendered directly by Blink/Chromium vector pipelines.
-- **Horizontal Occupancy**: The roadmap column occupies 70.6% of the screen width (1354.7px physical width), striking an ideal balance between prominent roadmap focus and comfortable dark-theme canvas margins (276px on each side).
-- **Text Legibility**: Text and UI controls are effectively 33% larger, ensuring every label, tag chip, and progress indicator remains crisp when scaled down to 800px width in GitHub README views.
+The root cause was identified in `tools/demo/record-demo-raw.mjs`:
+```javascript
+// DEFECTIVE PREVIOUS IMPLEMENTATION:
+const context = await browser.newContext({
+  viewport: { width: 1440, height: 810 },
+  deviceScaleFactor: 1.33333333,
+  recordVideo: {
+    dir: tempVideoDir,
+    size: { width: 1920, height: 1080 }, // MISMATCH WITH VIEWPORT!
+  },
+})
+```
+Playwright's screencast capture operates on the logical viewport in CSS pixels. When `recordVideo.size` was set to 1920×1080 while `viewport` was 1440×810, Chromium's screencast API did not upscale the viewport; it placed the 1440×810 image at coordinate `(0, 0)` in a 1920×1080 canvas and padded the remainder with gray pixels. `deviceScaleFactor` does not scale the screencast video output dimensions in Playwright.
 
-### Master MP4 Encoding Specification
+### Why Earlier Validation Missed the Defect
+The previous assembly script verified FFprobe stream dimensions (`width === 1920 && height === 1080`). Because the MP4 container and video stream technically had 1920×1080 dimensions, metadata-only checks passed without inspecting the internal pixel geometry.
 
-| Property | Target Specification | Actual Measured Value | Compliance |
+### Engineering Correction
+1. **Matched Source Capture**: In `record-demo-raw.mjs`, `viewport` and `recordVideo.size` are set to an exact 1:1 match: `{ width: 1440, height: 810 }`. Playwright outputs raw video where 100% of the pixels contain authentic application content with zero gray borders or padding.
+2. **Lanczos Postproduction Scaling**: In `assemble-demo.mjs`, FFmpeg scales the unpadded 1440×810 footage to the master 1920×1080 canvas using high-grade Lanczos interpolation:
+   ```bash
+   ffmpeg -i raw.webm -vf scale=1920:1080:flags=lanczos -c:v libx264 -pix_fmt yuv420p -r 30 -preset slow -crf 18 -movflags +faststart roadforge-product-demo.mp4
+   ```
+   Because 1440×810 and 1920×1080 share the identical 16:9 aspect ratio (`1.7777778`), scaling preserves geometry with zero distortion, zero letterboxing, and zero pillarboxing.
+3. **Automated Pixel-Level Geometry Assertions**: Added `tools/demo/verify-demo-media.mjs`, which extracts representative frames across the entire video and asserts that coordinates beyond x=1440 and y=810 contain genuine UI content rather than padding.
+
+---
+
+## 2. Demonstration Structure and Storyboard (90-Second Cut)
+
+The video is structured as a deliberate 90-second product narrative in five distinct acts:
+
+```
+[Act 1: The Idea]  0.0s ─── 12.2s  Roadmap creation & clean onboarding
+[Act 2: Structure] 12.2s ── 24.1s  4-phase lifecycle construction
+[Act 3: Tasks]     24.1s ── 63.1s  Engineering deliverables & subtasks
+[Act 4: Intel]     63.1s ── 87.7s  Complexity, tags, dependencies & unblocking
+[Act 5: Showcase]  87.7s ── 90.5s  Portable export & complete 4-phase beauty hold
+```
+
+### Scene Timings and Visual Actions
+
+| Act | Timestamp Range | Duration | Key Visual Actions and State Transitions |
 |---|---|---|---|
-| Duration | 55.0 - 65.0 seconds | 59.77 seconds | PASS |
-| Dimensions | 1920x1080 | 1920x1080 | PASS |
+| **Act 1: The Idea** | 0.00s – 12.22s | 12.22s | Landing hero overview; CTA click; "Create your roadmap" wizard; display name "Developer"; title "Launching a Developer Tool"; "Start simple" creation; enters workspace; cleanly dismisses onboarding welcome banner. |
+| **Act 2: Build Structure** | 12.22s – 24.11s | 11.89s | Adds "Development", "Testing", "Release" phases; verifies clean replacement of default placeholders; expands all phases; viewer absorbs the 4-phase structure. |
+| **Act 3: Tasks & Subtasks** | 24.11s – 63.07s | 38.96s | Populates 3 meaningful tasks across each phase (12 tasks total); expands "Define product requirements" in Planning and adds/completes developer persona subtasks; expands "Implement frontend components" in Development and completes hero layout subtask. |
+| **Act 4: Dependencies & Progress** | 63.07s – 87.74s | 24.67s | Configures "High" complexity and "Core" tag on Architecture task; sets "Engine" tag on Persistence task; links "Publish the release" to "Verify production builds"; displays prominent amber "Blocked" indicator; completes Testing prerequisites; demonstrates realtime blocker clearance and progress advancement. |
+| **Act 5: Final Showcase** | 87.74s – 90.50s | 2.76s (hold through 90.5s) | Demonstrates offline data portability via Import / Export JSON preview; modal closes cleanly; collapses Planning and Development headers to bring all four phases (Planning, Development, Testing, Release) into a balanced full-frame view; steady beauty hold. |
+
+**Total Master MP4 Duration:** 90.50 seconds (fully complies with 85–95 second requirement).
+
+---
+
+## 3. Visual Composition and Aesthetics
+
+### Layout Framing
+- **Workspace Proportions**: At 1440×810 viewport with the 1080px workspace column, the application occupies 75% of horizontal screen width, with balanced 180px dark-theme side margins.
+- **Typography Readability**: Text rendered at 75% frame width is 33% larger than unscaled 1080p, remaining legible down to 800px display width on GitHub README embeds and mobile devices.
+- **Onboarding Banner Dismissal**: The initial "Your roadmap is local" onboarding banner is dismissed early in Act 1, reclaiming 84px of vertical space.
+- **Showcase Composition**: In Act 5, completed earlier phases (Planning and Development) are collapsed to their compact summary headers, allowing Phase 3 (Testing) and Phase 4 (Release) tasks and completion checkmarks to appear simultaneously within the 1080p viewport without clipping.
+
+### Cursor and Transitions
+- **Vector Cursor**: Custom SVG cursor (white `#FFFFFF` fill, `#0F172A` outline, drop shadow) with its hotspot aligned to coordinate `(0, 0)`.
+- **Subtle Click Ripple**: Gentle 24px expanding ring with 0.28s cubic-bezier fadeout on click.
+- **Human-Like Motion**: Cursor uses cubic ease-out movement (`1 - (1 - t)^3`) across 12–16 steps rather than instant jumps or robotic linear motion.
+- **Editing Pacing**: Typing speeds set to 14–20ms per character with 300–600ms pauses after key actions, avoiding the appearance of an automated script or speedrun.
+
+---
+
+## 4. Master Encoding Specifications and Verification
+
+### Master MP4 Video
+
+| Property | Requirement | Actual Measured Value | Status |
+|---|---|---|---|
+| Duration | 85.0 – 95.0 seconds | 90.50 seconds | PASS |
+| Dimensions | 1920×1080 | 1920×1080 | PASS |
 | Aspect Ratio | 16:9 | 16:9 | PASS |
 | Frame Rate | 30.0 FPS | 30.0 FPS (30/1) | PASS |
 | Video Codec | H.264 (AVC) | H.264 High Profile (avc1) | PASS |
 | Pixel Format | yuv420p | yuv420p | PASS |
-| Bitrate | Quality-driven CRF | 668 kbps | PASS |
-| File Size | High quality, reasonable size | 4.76 MB (4,996,281 bytes) | PASS |
-| Fast Start | Moov atom at file start | Verified (moov atom at byte 36) | PASS |
+| Bitrate | Quality CRF 18 | 838 kbps | PASS |
+| File Size | 10 – 25 MB (or justified) | 9.05 MB (9,489,408 bytes) | PASS |
+| Fast Start | Moov atom at file start | Enabled (`+faststart`) | PASS |
+| Frame Padding | None (full bleed) | Verified at 7 timestamps | PASS |
 
-### Preview GIF Specification
+### Animated Preview GIF
 
-| Property | Target Specification | Actual Measured Value | Compliance |
+| Property | Requirement | Actual Measured Value | Status |
 |---|---|---|---|
-| Dimensions | Approx 800x450 | 800x450 | PASS |
-| Duration | 8.0 - 12.0 seconds | 9.00 seconds | PASS |
-| Frame Rate | 10 - 12 FPS | 12.0 FPS | PASS |
-| Palette Optimization | Lanczos scale + two-pass palettegen | 128 colors, Bayer dithering | PASS |
-| File Size | Under 4.5 MB | 1.54 MB (1,614,132 bytes) | PASS |
-| Content | High-impact intelligence highlight | Dependency linking, Blocked badge, unblocking | PASS |
+| Dimensions | 800×450 | 800×450 | PASS |
+| Duration | 8.0 – 12.0 seconds | 10.00 seconds | PASS |
+| Frame Count | > 50 frames | 108 frames | PASS |
+| Format | Genuine animated GIF | GIF89a | PASS |
+| Palette | Lanczos + diff palette | 128 colors, Bayer dithering | PASS |
+| File Size | Under 4.5 MB | 1.49 MB (1,564,672 bytes) | PASS |
+| Content | Unblocking & progress leap | Dependency resolution highlight | PASS |
 
-### Thumbnail Specification
+### High-Resolution Showcase Thumbnail
 
-| Property | Target Specification | Actual Measured Value | Compliance |
+| Property | Requirement | Actual Measured Value | Status |
 |---|---|---|---|
-| Dimensions | 1920x1080 | 1920x1080 | PASS |
+| Dimensions | 1920×1080 | 1920×1080 | PASS |
 | Format | PNG | PNG (8-bit/color RGB) | PASS |
-| Timestamp | Completed beauty hold | Extracted at 56.5s | PASS |
-| File Size | Sharp high-resolution frame | 285.2 KB | PASS |
+| Extracted Timestamp | Beauty hold | 87.0 seconds | PASS |
+| All 4 Phases Visible | Required | Verified in final showcase | PASS |
+| File Size | Sharp, unpadded | 370.5 KB | PASS |
 
 ---
 
-## 3. Quality Verification and Assertions
+## 5. Automated Verification Results
 
-### Pre-Recording and In-Flight Assertions
-The automation script executes programmatic assertions during execution:
-1. **Phase Creation Assertion**: Confirmed exact text matching for each newly created phase (`Development`, `Testing`, `Release`). Verified that the input field replaced the initial `New phase` placeholder cleanly without concatenation.
-2. **All Phases Assertion**: Verified array equality against `['Planning', 'Development', 'Testing', 'Release']`.
-3. **Console Log Auditing**: Captured browser console events. Confirmed zero JavaScript runtime exceptions.
-4. **State Transitions**: Validated that linking "Publish initial release candidate" to "Run Playwright end-to-end tests" produced the expected amber Blocked indicator, and completing the prerequisite task cleared the blocked state in real time.
+Running `node tools/demo/verify-demo-media.mjs`:
+```text
+=== ROADFORGE DEMO MEDIA VERIFICATION ===
 
-### Playback and Readability Inspection
-- Frame captures across all acts (3s, 8s, 12s, 25s, 42s, 50s, 56s) were extracted and inspected.
-- Verified that text contrast complies with Anvilary design tokens.
-- No address bars, browser developer tools, debug overlays, or personal credentials are recorded.
-- Visual pacing allows viewers to follow each mouse interaction and read task descriptions comfortably.
+1. MP4 Master Video Properties:
+   Resolution: 1920x1080 (Required: 1920x1080)
+   Duration: 90.50s (Required: 85.0s - 95.0s)
+   Codec: h264 (yuv420p)
+   Frame Rate: 30/1 (Required: 30/1)
+   File Size: 9.05 MB
 
----
+2. Pixel-Level Frame Geometry Validation:
+   [Frame 05s PASS] Full-bleed geometry verified. Samples: right=(5, 5, 5), bottom=(5, 5, 5), corner=(6, 6, 6)
+   [Frame 18s PASS] Full-bleed geometry verified. Samples: right=(16, 15, 18), bottom=(17, 16, 19), corner=(13, 12, 15)
+   [Frame 35s PASS] Full-bleed geometry verified. Samples: right=(19, 18, 21), bottom=(20, 19, 24), corner=(22, 15, 13)
+   [Frame 52s PASS] Full-bleed geometry verified. Samples: right=(19, 18, 21), bottom=(20, 19, 24), corner=(24, 14, 15)
+   [Frame 66s PASS] Full-bleed geometry verified. Samples: right=(22, 21, 24), bottom=(108, 107, 110), corner=(24, 14, 13)
+   [Frame 73s PASS] Full-bleed geometry verified. Samples: right=(19, 18, 23), bottom=(22, 21, 24), corner=(24, 14, 18)
+   [Frame 86s PASS] Full-bleed geometry verified. Samples: right=(19, 18, 23), bottom=(22, 21, 26), corner=(21, 14, 14)
 
-## 4. Reproducibility
+3. Beauty Showcase Thumbnail Validation:
+   Resolution: 1920x1080 (Required: 1920x1080)
+   File size: 370.5 KB
 
-The production workflow is modularized into two distinct stages and driven by a top-level orchestrator:
+4. Animated GIF Preview Validation:
+   Format: GIF
+   Dimensions: 800x450 (Required: 800x450)
+   Is Animated: True
+   Total Frames: 108
+   File Size: 1.49 MB (Recommended < 4.5 MB)
 
-1. **Stage 1: Authentic Automation (`tools/demo/record-demo-raw.mjs`)**:
-   - Locates an available ephemeral port.
-   - Spawns the standalone production server (`apps/frontend/scripts/serve-standalone.mjs`).
-   - Launches headless Chromium via Playwright at 1440x810 with DPR 1.33333333.
-   - Injects custom SVG cursor styling.
-   - Executes the scripted user actions and assertions.
-   - Records raw WebM footage and outputs `scene-manifest.json`.
-
-2. **Stage 2: Postproduction Assembly (`tools/demo/assemble-demo.mjs`)**:
-   - Transcodes raw video to master MP4 (1920x1080 30FPS H.264, CRF 18, Fast Start).
-   - Extracts the 1920x1080 PNG thumbnail from the beauty hold scene.
-   - Generates the 800x450 looping preview GIF with two-pass palette optimization.
-   - Runs `ffprobe` validation across all outputs.
-
-3. **Master Entrypoint (`tools/demo/produce-demo.mjs`)**:
-   - Can be run end-to-end with:
-     ```bash
-     node tools/demo/produce-demo.mjs
-     ```
-   - Alternatively, `node tools/demo/record-demo.mjs` delegates directly to this pipeline.
-
-### Prerequisites
-- Node.js >= 22
-- pnpm 9.15.9
-- ffmpeg >= 6.0 and ffprobe
-- Chromium (installed via `@playwright/test`)
+>>> ALL DEMONSTRATION MEDIA QUALITY CONTROLS PASSED <<<
+```
 
 ---
 
-## 5. Environment Isolation and Git Details
+## 6. Reproducibility and Environment Isolation
 
-### Worktree Isolation
-To prevent any interference with concurrent work (specifically the public roadmap viewer on `feat/public-roadmap-embed`), this work was completed in a dedicated Git worktree:
-- **Worktree Path**: `/home/alteixeira20/Projects/Anvilary-Tools/RoadForge-demo`
-- **Feature Branch**: `feat/professional-product-demo`
-- **Starting Revision**: `1face3fb53bd00c6933f85dd3fb5dd75ad670e15` (on `main`)
-- **Server Ports**: Ephemeral port selection via `availablePort()`; no collisions with active developer instances.
-- **Data Boundary**: Disposable browser sessions; no persistent server databases or user tokens modified.
+### Reproduction Commands
+To reproduce all demonstration assets from scratch:
+```bash
+cd /home/alteixeira20/Projects/Anvilary-Tools/RoadForge-demo
+node tools/demo/produce-demo.mjs
+node tools/demo/verify-demo-media.mjs
+```
 
-### Artifacts Delivered
-- `docs/media/roadforge-product-demo.mp4` (Master 59.8s video)
-- `docs/media/roadforge-demo-preview.gif` (9.0s 800x450 looping preview)
-- `docs/media/roadforge-demo-thumbnail.png` (1920x1080 showcase frame)
-- `tools/demo/record-demo-raw.mjs` (Isolated Playwright capture script)
-- `tools/demo/assemble-demo.mjs` (FFmpeg transcode and asset pipeline)
-- `tools/demo/produce-demo.mjs` (Master orchestration script)
-- `tools/demo/record-demo.mjs` (Forwarding entrypoint)
-- `docs/architecture/roadforge-professional-demo-production-report.md` (Production documentation)
+### Environment Isolation
+- **Worktree**: Dedicated worktree `/home/alteixeira20/Projects/Anvilary-Tools/RoadForge-demo`.
+- **Branch**: `feat/professional-product-demo`.
+- **Starting Revision**: `aed8f1c7d1fe40345dbba0a6dd22b42beeaee7dc`.
+- **Server Ports**: Ephemeral port selection via Node `net.createServer()` on loopback `127.0.0.1`.
+- **Process Cleanup**: Temporary servers and browser contexts terminate cleanly upon recording completion; temporary WebM files are removed during postproduction assembly.

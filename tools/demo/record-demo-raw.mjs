@@ -69,14 +69,31 @@ async function startServer(port) {
   throw new Error(`Timed out waiting for server at ${url}`)
 }
 
-async function smoothMoveTo(page, targetX, targetY, steps = 10) {
-  await page.mouse.move(targetX, targetY, { steps })
+async function smoothMoveTo(page, targetX, targetY, steps = 14) {
+  const currentPos = await page.evaluate(() => {
+    const cur = document.getElementById('demo-cursor')
+    if (cur && cur.style.display !== 'none') {
+      return { x: parseFloat(cur.style.left) || 0, y: parseFloat(cur.style.top) || 0 }
+    }
+    return { x: 720, y: 405 }
+  })
+  const startX = currentPos.x
+  const startY = currentPos.y
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps
+    // Ease out cubic
+    const ease = 1 - Math.pow(1 - t, 3)
+    const x = startX + (targetX - startX) * ease
+    const y = startY + (targetY - startY) * ease
+    await page.mouse.move(x, y)
+    await sleep(14)
+  }
 }
 
-async function smoothClick(page, locator, waitAfter = 200) {
+async function smoothClick(page, locator, waitAfter = 250) {
   await locator.scrollIntoViewIfNeeded()
   let box = await locator.boundingBox()
-  if (box && box.y < 100) {
+  if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
     await sleep(40)
     box = await locator.boundingBox()
@@ -86,28 +103,28 @@ async function smoothClick(page, locator, waitAfter = 200) {
   } else {
     const cx = box.x + box.width / 2
     const cy = box.y + box.height / 2
-    await smoothMoveTo(page, cx, cy, 9)
-    await sleep(40)
+    await smoothMoveTo(page, cx, cy, 12)
+    await sleep(50)
     await page.mouse.down()
-    await sleep(40)
+    await sleep(50)
     await page.mouse.up()
   }
   await sleep(waitAfter)
 }
 
-async function smoothType(page, locator, text, delay = 12) {
-  await smoothClick(page, locator, 60)
+async function smoothType(page, locator, text, delay = 16) {
+  await smoothClick(page, locator, 100)
   for (const char of text) {
     await page.keyboard.type(char)
     await sleep(delay)
   }
-  await sleep(100)
+  await sleep(200)
 }
 
 async function ensurePhaseOpen(page, phaseLocator) {
   await phaseLocator.scrollIntoViewIfNeeded()
   let box = await phaseLocator.boundingBox()
-  if (box && box.y < 100) {
+  if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
     await sleep(40)
   }
@@ -115,7 +132,23 @@ async function ensurePhaseOpen(page, phaseLocator) {
   if (!isExpanded) {
     const toggleBtn = phaseLocator.locator('.phase-toggle-btn')
     if (await toggleBtn.isVisible()) {
-      await smoothClick(page, toggleBtn, 150)
+      await smoothClick(page, toggleBtn, 200)
+    }
+  }
+}
+
+async function ensurePhaseCollapsed(page, phaseLocator) {
+  await phaseLocator.scrollIntoViewIfNeeded()
+  let box = await phaseLocator.boundingBox()
+  if (box && box.y < 90) {
+    await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
+    await sleep(40)
+  }
+  const isExpanded = await phaseLocator.evaluate((el) => el.classList.contains('expanded'))
+  if (isExpanded) {
+    const toggleBtn = phaseLocator.locator('.phase-toggle-btn')
+    if (await toggleBtn.isVisible()) {
+      await smoothClick(page, toggleBtn, 200)
     }
   }
 }
@@ -123,7 +156,7 @@ async function ensurePhaseOpen(page, phaseLocator) {
 async function toggleTask(page, taskRowLocator, shouldExpand = null) {
   await taskRowLocator.scrollIntoViewIfNeeded()
   let box = await taskRowLocator.boundingBox()
-  if (box && box.y < 100) {
+  if (box && box.y < 90) {
     await page.evaluate((delta) => window.scrollBy({ top: delta, behavior: 'instant' }), box.y - 120)
     await sleep(40)
   }
@@ -131,7 +164,7 @@ async function toggleTask(page, taskRowLocator, shouldExpand = null) {
   const isExpanded = (await toggleBtn.getAttribute('aria-expanded')) === 'true'
   const target = shouldExpand !== null ? shouldExpand : !isExpanded
   if (isExpanded !== target) {
-    await smoothClick(page, toggleBtn, 180)
+    await smoothClick(page, toggleBtn, 220)
   }
 }
 
@@ -143,19 +176,19 @@ export async function recordDemoRaw() {
   const port = await availablePort()
   const { serverProcess, url: BASE_URL } = await startServer(port)
 
-  console.log('Launching browser to record raw demonstration...')
+  console.log('Launching browser to record authentic 90-second demonstration...')
   const browser = await chromium.launch({
     headless: true,
   })
 
-  // Logical viewport 1440x810 with DPR 1.33333333 produces native 1920x1080 canvas
-  // where workspace takes ~71% of screen width with ideal text readability
+  // Viewport 1440x810 with EXACTLY MATCHED 1440x810 recording size
+  // Workspace takes ~75% screen width with optimal readability
+  // Zero gray padding, 100% full application frame
   const context = await browser.newContext({
     viewport: { width: 1440, height: 810 },
-    deviceScaleFactor: 1.33333333,
     recordVideo: {
       dir: tempVideoDir,
-      size: { width: 1920, height: 1080 },
+      size: { width: 1440, height: 810 },
     },
     acceptDownloads: true,
   })
@@ -170,7 +203,7 @@ export async function recordDemoRaw() {
     }
   })
 
-  // Inject sleek SVG cursor with subtle click ripple
+  // Inject sleek SVG cursor with subtle click ripple and precision hotspot
   await page.addInitScript(() => {
     window.addEventListener('DOMContentLoaded', () => {
       const cursor = document.createElement('div')
@@ -180,18 +213,18 @@ export async function recordDemoRaw() {
       cursor.style.left = '0px'
       cursor.style.pointerEvents = 'none'
       cursor.style.zIndex = '9999999'
-      cursor.style.transform = 'translate(0, 0)'
+      cursor.style.transform = 'translate(-3px, -2px)'
       cursor.style.transition = 'transform 0.04s ease-out'
       cursor.style.display = 'none'
 
       cursor.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));">
-          <path d="M3 2L18.5 12.5L11.5 14.5L8.5 21.5L3 2Z" fill="#F8FAFC" stroke="#0F172A" stroke-width="1.5" stroke-linejoin="round"/>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7));">
+          <path d="M3 2L18.5 12.5L11.5 14.5L8.5 21.5L3 2Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5" stroke-linejoin="round"/>
         </svg>
         <div id="demo-cursor-ripple" style="
           position: absolute;
-          top: 0px;
-          left: 0px;
+          top: 2px;
+          left: 3px;
           width: 0px;
           height: 0px;
           border-radius: 50%;
@@ -237,55 +270,69 @@ export async function recordDemoRaw() {
     console.log(`[${elapsed.toFixed(2)}s] ${name}`)
   }
 
-  // --- ACT 1: THE IDEA (0s - 8.5s) ---
+  // =========================================================================
+  // ACT 1: CREATE THE ROADMAP (0s - 12s)
+  // =========================================================================
   markScene('act1_start')
   await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' })
-  await sleep(500)
+  await sleep(800)
 
   // Move to CTA and click
   const ctaBtn = page.locator('.hero .btn.primary, button:has-text("Hosted demo"), button:has-text("Create roadmap")').first()
-  await smoothClick(page, ctaBtn, 400)
+  await smoothClick(page, ctaBtn, 500)
 
   const wizard = page.getByRole('dialog', { name: 'Create your roadmap' })
   await wizard.waitFor({ state: 'visible' })
-  await sleep(250)
+  await sleep(400)
 
   const displayNameInput = wizard.getByLabel('Your display name', { exact: true })
   await smoothType(page, displayNameInput, 'Developer', 20)
-  await sleep(180)
+  await sleep(300)
 
   const roadmapTitleInput = wizard.getByLabel('Roadmap title', { exact: true })
-  await smoothType(page, roadmapTitleInput, 'Launching a Developer Tool', 16)
-  await sleep(250)
+  await smoothType(page, roadmapTitleInput, 'Launching a Developer Tool', 18)
+  await sleep(500)
 
   const continueBtn = wizard.getByRole('button', { name: /Continue/ })
-  await smoothClick(page, continueBtn, 350)
+  await smoothClick(page, continueBtn, 500)
 
   const startingPointStep = page.getByRole('dialog', { name: 'Start simple' })
   await startingPointStep.waitFor({ state: 'visible' })
-  await sleep(300)
+  await sleep(600)
 
   const createRoadmapSubmit = startingPointStep.getByRole('button', { name: 'Create roadmap', exact: true })
-  await smoothClick(page, createRoadmapSubmit, 500)
+  await smoothClick(page, createRoadmapSubmit, 800)
 
   await page.waitForURL(/\/workspace\?roadmap=/, { timeout: 15000 })
-  await sleep(500)
+  await sleep(600)
+
+  // Cleanly dismiss the onboarding welcome banner to maximize workspace clarity and vertical space
+  const welcomeDismissBtn = page.getByRole('button', { name: 'Dismiss welcome onboarding banner' })
+  if (await welcomeDismissBtn.isVisible()) {
+    await smoothClick(page, welcomeDismissBtn, 400)
+  }
+
+  // Hold on the clean initial workspace
+  await sleep(2200)
   markScene('act1_end')
 
-  // --- ACT 2: STRUCTURE (8.5s - 14.5s) ---
+  // =========================================================================
+  // ACT 2: BUILD THE STRUCTURE (12s - 28s)
+  // =========================================================================
   markScene('act2_start')
   const addPhaseBtn = page.getByRole('button', { name: 'Add another phase', exact: true })
 
+  // RoadForge creates "Planning" by default. We add "Development", "Testing", "Release"
   const phaseNames = ['Development', 'Testing', 'Release']
   for (const name of phaseNames) {
-    await smoothClick(page, addPhaseBtn, 200)
+    await smoothClick(page, addPhaseBtn, 300)
     const phaseInput = page.locator('.phase-name-input')
     await phaseInput.waitFor({ state: 'visible' })
-    await smoothType(page, phaseInput, name, 16)
+    await smoothType(page, phaseInput, name, 20)
     await page.keyboard.press('Enter')
-    await sleep(250)
+    await sleep(1400) // Clear pause so viewer absorbs each new phase card and color accent
 
-    // Verify exact phase title replacement
+    // Strict validation: default placeholder must be completely replaced
     const createdPhaseHeader = page.locator('.phase-head').last()
     const phaseNameText = (await createdPhaseHeader.locator('.phase-summary-body .name').textContent())?.trim()
     if (phaseNameText !== name) {
@@ -293,7 +340,7 @@ export async function recordDemoRaw() {
     }
   }
 
-  // Validate all 4 phases strictly
+  // Strictly validate all 4 phases
   const expectedAllPhases = ['Planning', 'Development', 'Testing', 'Release']
   const renderedPhaseNames = (await page.locator('.phase .phase-summary-body .name').allTextContents()).map((s) => s.trim())
   for (let i = 0; i < expectedAllPhases.length; i++) {
@@ -305,12 +352,15 @@ export async function recordDemoRaw() {
   // Expand all phases
   const expandAllBtn = page.getByRole('button', { name: /Expand all/ })
   if (await expandAllBtn.isVisible()) {
-    await smoothClick(page, expandAllBtn, 300)
+    await smoothClick(page, expandAllBtn, 400)
   }
-  await sleep(250)
+  // Hold to appreciate the 4-phase project architecture
+  await sleep(3000)
   markScene('act2_end')
 
-  // --- ACT 3: TASKS AND SUBTASKS (14.5s - 32.0s) ---
+  // =========================================================================
+  // ACT 3: ADD TASKS AND SUBTASKS (28s - 55s)
+  // =========================================================================
   markScene('act3_start')
   const phases = page.locator('.phase')
 
@@ -322,43 +372,26 @@ export async function recordDemoRaw() {
       if (i === 0) {
         const addFirstBtn = targetPhase.getByRole('button', { name: /Add first task/ })
         if (await addFirstBtn.isVisible()) {
-          await smoothClick(page, addFirstBtn, 120)
+          await smoothClick(page, addFirstBtn, 200)
         } else {
-          await smoothClick(page, targetPhase.locator('.add-task-btn'), 120)
+          await smoothClick(page, targetPhase.locator('.add-task-btn'), 200)
         }
       } else {
-        await smoothClick(page, targetPhase.locator('.add-task-btn'), 120)
+        await smoothClick(page, targetPhase.locator('.add-task-btn'), 200)
       }
       const draftInput = targetPhase.locator('.draft-task-input')
       await draftInput.waitFor({ state: 'visible' })
-      await smoothType(page, draftInput, taskTitle, 10)
+      await smoothType(page, draftInput, taskTitle, 14)
       await page.keyboard.press('Enter')
-      await sleep(150)
+      await sleep(350)
     }
   }
 
-  // 1. Planning phase
+  // 1. Planning phase tasks
   await addTasks(0, [
     'Define product requirements',
     'Design core architecture',
-  ])
-
-  // 2. Development phase
-  await addTasks(1, [
-    'Implement frontend components',
-    'Build local persistence engine',
-  ])
-
-  // 3. Testing phase
-  await addTasks(2, [
-    'Write automated unit test suites',
-    'Run Playwright end-to-end tests',
-  ])
-
-  // 4. Release phase
-  await addTasks(3, [
-    'Prepare user documentation',
-    'Publish initial release candidate',
+    'Establish milestones',
   ])
 
   // Subtasks on Planning: "Define product requirements"
@@ -375,19 +408,27 @@ export async function recordDemoRaw() {
     'Establish acceptance criteria',
   ]
   for (const st of reqsSubtasks) {
-    await smoothClick(page, addSubtaskBtn, 120)
+    await smoothClick(page, addSubtaskBtn, 180)
     const input = page.getByLabel('Subtask title')
-    await smoothType(page, input, st, 10)
+    await smoothType(page, input, st, 14)
     await page.getByRole('button', { name: 'Add', exact: true }).click()
-    await sleep(150)
+    await sleep(250)
   }
 
   // Mark first subtask complete
   const personaCheck = page.getByRole('checkbox', {
     name: 'Mark subtask "Target developer personas" as complete',
   })
-  await smoothClick(page, personaCheck, 250)
+  await smoothClick(page, personaCheck, 400)
   await toggleTask(page, reqsHeader, false)
+  await sleep(400)
+
+  // 2. Development phase tasks
+  await addTasks(1, [
+    'Implement frontend components',
+    'Build local persistence',
+    'Integrate core engine',
+  ])
 
   // Subtasks on Development: "Implement frontend components"
   const devPhase = phases.nth(1)
@@ -401,23 +442,41 @@ export async function recordDemoRaw() {
     'Accessible navigation',
   ]
   for (const st of devSubtasks) {
-    await smoothClick(page, addSubtaskBtn, 120)
+    await smoothClick(page, addSubtaskBtn, 180)
     const input = page.getByLabel('Subtask title')
-    await smoothType(page, input, st, 10)
+    await smoothType(page, input, st, 14)
     await page.getByRole('button', { name: 'Add', exact: true }).click()
-    await sleep(150)
+    await sleep(250)
   }
 
   // Mark first subtask complete
   const heroCheck = page.getByRole('checkbox', {
     name: 'Mark subtask "Responsive hero layout" as complete',
   })
-  await smoothClick(page, heroCheck, 250)
+  await smoothClick(page, heroCheck, 400)
   await toggleTask(page, frontendTaskHeader, false)
-  await sleep(250)
+  await sleep(400)
+
+  // 3. Testing phase tasks
+  await addTasks(2, [
+    'Write automated tests',
+    'Validate accessibility',
+    'Verify production builds',
+  ])
+  await sleep(500)
+
+  // 4. Release phase tasks
+  await addTasks(3, [
+    'Prepare documentation',
+    'Finalize deployment',
+    'Publish the release',
+  ])
+  await sleep(1000)
   markScene('act3_end')
 
-  // --- ACT 4: INTELLIGENCE AND PROGRESS (32.0s - 45.0s) ---
+  // =========================================================================
+  // ACT 4: DEPENDENCIES AND PROGRESS (55s - 75s)
+  // =========================================================================
   markScene('act4_start')
   // 1. Task: Design core architecture -> High Complexity, Tag: Core, Rich Markdown
   await ensurePhaseOpen(page, planningPhase)
@@ -426,118 +485,145 @@ export async function recordDemoRaw() {
 
   const editDetailsBtn = page.getByRole('button', { name: 'Edit details' })
   await editDetailsBtn.waitFor({ state: 'visible' })
-  await smoothClick(page, editDetailsBtn, 200)
+  await smoothClick(page, editDetailsBtn, 300)
 
   const complexitySelect = page.locator('select[id^="edit-complexity-"]')
-  await smoothClick(page, complexitySelect, 150)
+  await smoothClick(page, complexitySelect, 200)
   await complexitySelect.selectOption('high')
-  await sleep(150)
+  await sleep(250)
 
   const descTextarea = page.locator('textarea[id^="edit-desc-"]')
   await smoothType(
     page,
     descTextarea,
     '### Architecture\n- Local-first persistence\n- Realtime sync\n',
-    10,
+    12,
   )
-  await sleep(150)
+  await sleep(250)
 
   const tagInput = page.locator('.tag-chip-input')
   if (await tagInput.isVisible()) {
-    await smoothType(page, tagInput, 'Core', 12)
+    await smoothType(page, tagInput, 'Core', 16)
     await page.keyboard.press('Enter')
-    await sleep(150)
+    await sleep(250)
   }
 
   const saveBtn = page.getByRole('button', { name: 'Save', exact: true })
-  await smoothClick(page, saveBtn, 250)
+  await smoothClick(page, saveBtn, 350)
   await toggleTask(page, archTaskHeader, false)
+  await sleep(400)
 
   // 2. Tag "Engine" on Persistence task
   await ensurePhaseOpen(page, devPhase)
-  const engineTaskHeader = devPhase.locator('.task-row', { hasText: 'Build local persistence engine' }).first()
+  const engineTaskHeader = devPhase.locator('.task-row', { hasText: 'Build local persistence' }).first()
   await toggleTask(page, engineTaskHeader, true)
-  await smoothClick(page, editDetailsBtn, 200)
+  await smoothClick(page, editDetailsBtn, 300)
   if (await tagInput.isVisible()) {
-    await smoothType(page, tagInput, 'Engine', 12)
+    await smoothType(page, tagInput, 'Engine', 16)
     await page.keyboard.press('Enter')
-    await sleep(150)
+    await sleep(250)
   }
-  await smoothClick(page, saveBtn, 250)
+  await smoothClick(page, saveBtn, 350)
   await toggleTask(page, engineTaskHeader, false)
+  await sleep(500)
 
-  // 3. Dependency: "Publish initial release candidate" depends on "Run Playwright end-to-end tests"
+  // 3. Dependency: "Publish the release" depends on "Verify production builds"
   const releasePhase = phases.nth(3)
   await ensurePhaseOpen(page, releasePhase)
-  const publishTaskHeader = releasePhase.locator('.task-row', { hasText: 'Publish initial release candidate' }).first()
+  const publishTaskHeader = releasePhase.locator('.task-row', { hasText: 'Publish the release' }).first()
   await toggleTask(page, publishTaskHeader, true)
 
   const linkDepBtn = page.getByRole('button', { name: 'Link dependency' })
   await linkDepBtn.waitFor({ state: 'visible' })
-  await smoothClick(page, linkDepBtn, 200)
+  await smoothClick(page, linkDepBtn, 300)
 
+  markScene('act4_dep_link')
   const depSearchInput = page.getByLabel('Search tasks to link')
-  await smoothType(page, depSearchInput, 'Playwright', 12)
-  await sleep(200)
+  await smoothType(page, depSearchInput, 'production builds', 14)
+  await sleep(300)
 
-  const depOption = page.locator('.task-option', { hasText: 'Run Playwright end-to-end tests' }).first()
-  await smoothClick(page, depOption, 250)
+  const depOption = page.locator('.task-option', { hasText: 'Verify production builds' }).first()
+  await smoothClick(page, depOption, 350)
   await toggleTask(page, publishTaskHeader, false)
-  await sleep(500) // Show amber Blocked status badge clearly
 
-  // 4. Progress and Unblocking: Complete prerequisites
+  // Hold to showcase the amber Blocked indicator on "Publish the release"
+  markScene('act4_blocked_hold')
+  await sleep(2200)
+
+  // 4. Progress and Unblocking: Complete Testing tasks
+  markScene('act4_unblock_start')
   const testPhase = phases.nth(2)
   await ensurePhaseOpen(page, testPhase)
-  const unitCheck = page.getByRole('checkbox', {
-    name: 'Mark task "Write automated unit test suites" as complete',
-  })
-  await smoothClick(page, unitCheck, 300)
 
-  const playwrightCheck = page.getByRole('checkbox', {
-    name: 'Mark task "Run Playwright end-to-end tests" as complete',
+  const unitCheck = page.getByRole('checkbox', {
+    name: 'Mark task "Write automated tests" as complete',
   })
-  await smoothClick(page, playwrightCheck, 500)
-  // Watch "Publish initial release candidate" clear its blocker status!
-  await sleep(400)
+  await smoothClick(page, unitCheck, 500)
+
+  const a11yCheck = page.getByRole('checkbox', {
+    name: 'Mark task "Validate accessibility" as complete',
+  })
+  await smoothClick(page, a11yCheck, 500)
+
+  // Complete the prerequisite: "Verify production builds"
+  const buildCheck = page.getByRole('checkbox', {
+    name: 'Mark task "Verify production builds" as complete',
+  })
+  await smoothClick(page, buildCheck, 800)
+
+  // Watch the amber Blocked status on "Publish the release" clear to ready!
+  await sleep(1500)
+
+  // Complete "Publish the release" in Release phase -> Watch overall progress leap forward!
+  await ensurePhaseOpen(page, releasePhase)
+  const pubCheck = page.getByRole('checkbox', {
+    name: 'Mark task "Publish the release" as complete',
+  })
+  await smoothClick(page, pubCheck, 800)
+
+  // Pause to appreciate overall progress and completion
+  await sleep(1800)
   markScene('act4_end')
 
-  // --- ACT 5: THE RESULT (45.0s - 59.0s) ---
+  // =========================================================================
+  // ACT 5: FINAL SHOWCASE (75s - 90s)
+  // =========================================================================
   markScene('act5_start')
-  // Brief Export interaction
+  // 1. Brief Export interaction demonstrating data portability
   const ioBtn = page.getByRole('button', { name: 'Import / Export' })
-  await smoothClick(page, ioBtn, 250)
+  await smoothClick(page, ioBtn, 400)
   const downloadJsonBtn = page.getByRole('button', { name: 'Download JSON' })
   await downloadJsonBtn.waitFor({ state: 'visible' })
-  await sleep(500)
+  await sleep(1800) // Clear demonstration of export options
+
   // Close export modal cleanly
   const closeIoBtn = page.getByRole('button', { name: 'Close modal' }).or(page.locator('.modal-close')).first()
   if (await closeIoBtn.isVisible()) {
-    await smoothClick(page, closeIoBtn, 200)
+    await smoothClick(page, closeIoBtn, 300)
   } else {
     await page.keyboard.press('Escape')
-    await sleep(200)
+    await sleep(300)
   }
 
-  // Ensure all phases are expanded for clear beauty overview
-  if (await expandAllBtn.isVisible()) {
-    await smoothClick(page, expandAllBtn, 250)
-  }
+  // 2. Compose the final 4-phase master showcase
+  // Collapse Phase 0 (Planning - done) and Phase 1 (Development - done)
+  // Testing and Release remain open with their tasks
+  await ensurePhaseCollapsed(page, phases.nth(0))
+  await sleep(200)
+  await ensurePhaseCollapsed(page, phases.nth(1))
+  await sleep(200)
 
-  // Smooth gentle scroll to showcase the full 4-phase roadmap
-  for (let y = 0; y <= 220; y += 15) {
-    await page.evaluate((top) => window.scrollTo({ top }), y)
-    await sleep(25)
-  }
+  // Smooth scroll to top so all four phases and header are visible
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
   await sleep(600)
 
-  for (let y = 220; y >= 0; y -= 15) {
-    await page.evaluate((top) => window.scrollTo({ top }), y)
-    await sleep(25)
-  }
+  // Park cursor smoothly in neutral bottom-right area
+  await smoothMoveTo(page, 1380, 770, 16)
+  await sleep(300)
 
-  // Final hold on the completed roadmap
+  // 3. Final Beauty Hold (8.5 - 9.0 seconds steady hold)
   markScene('beauty_hold')
-  await sleep(4500)
+  await sleep(8800)
   markScene('act5_end')
 
   const totalRawDuration = (Date.now() - sceneManifest.startedAt) / 1000
