@@ -6,6 +6,7 @@ import { Modal } from '@/shared/ui/Modal'
 import { Icon } from '@/shared/ui/Icon'
 import { getParticipants, getShareLinks, regenerateShareLink, revokeParticipant, revokeShareLink, updateRoadmapPassword } from '@/features/sharing/services/sharing.service'
 import { useRoadmapData, useRoadmapSession } from '@/shared/context/roadmap-context'
+import { PublicRoadmapSection } from '@/features/publication/components/PublicRoadmapSection'
 import { ShareRoleSection } from '@/features/sharing/components/ShareRoleSection'
 import { isApiError, isAuthError } from '@/shared/http/roadmap-http'
 import type { Participant, ShareLink, ShareRole } from '@/shared/types/roadmap'
@@ -34,11 +35,12 @@ interface ShareModalProps {
   open: boolean
   onClose: () => void
   onToast: (msg: string) => void
+  onEnableSharing?: () => void
 }
 
-export function ShareModal({ open, onClose, onToast }: ShareModalProps) {
+export function ShareModal({ open, onClose, onToast, onEnableSharing }: ShareModalProps) {
   const { serverRoadmapId, sessionToken, role } = useRoadmapSession()
-  const { isPasswordEnabled, setIsPasswordEnabled } = useRoadmapData()
+  const { isPasswordEnabled, setIsPasswordEnabled, saved } = useRoadmapData()
   const [links, setLinks] = useState<ShareLink[]>([])
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(false)
@@ -57,6 +59,7 @@ export function ShareModal({ open, onClose, onToast }: ShareModalProps) {
     password: false,
   })
   const canManageShare = role === 'owner'
+  const hasUnsavedEdits = saved === false
   const roadmapUrl = serverRoadmapId && typeof window !== 'undefined'
     ? `${window.location.origin}/workspace?roadmap=${encodeURIComponent(serverRoadmapId)}`
     : null
@@ -557,6 +560,15 @@ export function ShareModal({ open, onClose, onToast }: ShareModalProps) {
             </section>
           </>
         )}
+        <PublicRoadmapSection
+          open={open}
+          serverRoadmapId={serverRoadmapId}
+          sessionToken={sessionToken}
+          canManage={canManageShare && !ownerOnly}
+          hasUnsavedEdits={hasUnsavedEdits}
+          onToast={onToast}
+          onEnableSharing={onEnableSharing}
+        />
       </div>
     </Modal>
   )

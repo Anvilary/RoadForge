@@ -12,7 +12,8 @@ const dependencies = {
   shared: [],
   tags: ['shared'],
   roadmaps: ['tags', 'shared'],
-  sharing: ['roadmaps', 'shared'],
+  publication: ['shared'],
+  sharing: ['roadmaps', 'publication', 'shared'],
   history: ['roadmaps', 'shared'],
   marketing: ['roadmaps', 'shared'],
   collaboration: ['sharing', 'shared'],
@@ -24,7 +25,7 @@ const dependencies = {
     'synchronization', 'phases', 'tasks', 'collaboration', 'data-transfer',
     'sharing', 'history', 'roadmaps', 'tags', 'shared',
   ],
-  app: ['workspace', 'synchronization', 'marketing', 'sharing', 'roadmaps', 'shared'],
+  app: ['workspace', 'synchronization', 'marketing', 'sharing', 'publication', 'roadmaps', 'shared'],
   'middleware.ts': ['shared'],
   'proxy.ts': ['shared'],
 }
