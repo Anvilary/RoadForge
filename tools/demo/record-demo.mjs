@@ -289,8 +289,24 @@ async function main() {
     await smoothType(page, phaseInput, name, 50)
     await page.keyboard.press('Enter')
     await sleep(1200)
+
+    // Pre-recording validation: verify phase was renamed cleanly without placeholder concatenation
+    const createdPhaseHeader = page.locator('.phase-head').last()
+    const phaseNameText = (await createdPhaseHeader.locator('.phase-summary-body .name').textContent())?.trim()
+    if (phaseNameText !== name) {
+      throw new Error(`Phase naming failure: expected "${name}", got "${phaseNameText}"`)
+    }
   }
   await sleep(1200)
+
+  // Validate all 4 phase titles strictly before proceeding
+  const expectedAllPhases = ['Planning', 'Development', 'Testing', 'Release']
+  const renderedPhaseNames = (await page.locator('.phase .phase-summary-body .name').allTextContents()).map((s) => s.trim())
+  for (let i = 0; i < expectedAllPhases.length; i++) {
+    if (renderedPhaseNames[i] !== expectedAllPhases[i]) {
+      throw new Error(`Roadmap phase name mismatch at index ${i}: expected "${expectedAllPhases[i]}", got "${renderedPhaseNames[i]}"`)
+    }
+  }
 
   // Expand all phases for clear overview
   const expandAllBtn = page.getByRole('button', { name: /Expand all/ })

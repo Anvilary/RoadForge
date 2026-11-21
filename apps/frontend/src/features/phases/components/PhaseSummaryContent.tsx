@@ -25,9 +25,12 @@ interface PhaseSummaryContentProps {
   doneCount: number
   taskCount: number
   inputRef: React.RefObject<HTMLInputElement | null>
+  isNewPhase?: boolean
   onDraftChange: (value: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
   onBlur: () => void
+  onMouseDown?: (e: React.MouseEvent<HTMLInputElement>) => void
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void
   onToggle?: () => void
 }
 
@@ -45,6 +48,8 @@ export function PhaseSummaryContent({
   onDraftChange,
   onKeyDown,
   onBlur,
+  onMouseDown,
+  onClick,
   onToggle,
 }: PhaseSummaryContentProps) {
   const progressStyle: ForgeStyle = { '--p': `${progressPercent}%` }
@@ -65,7 +70,8 @@ export function PhaseSummaryContent({
           onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={onKeyDown}
           onBlur={onBlur}
-          onClick={(e) => e.stopPropagation()}
+          onMouseDown={onMouseDown}
+          onClick={onClick ?? ((e) => e.stopPropagation())}
           maxLength={120}
         />
       ) : (

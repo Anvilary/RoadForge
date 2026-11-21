@@ -303,6 +303,7 @@ describe('phase creation controls', () => {
       doneCount: 0,
       taskCount: 0,
       renameKey: 0,
+      isNewPhase: true,
       onPhaseToggle: vi.fn(),
       onSave: vi.fn(),
     }
@@ -318,5 +319,38 @@ describe('phase creation controls', () => {
     const input = container.querySelector('input')
     expect(input).toBeInstanceOf(HTMLInputElement)
     expect(document.activeElement).toBe(input)
+    expect(input?.selectionStart).toBe(0)
+    expect(input?.selectionEnd).toBe(9)
+  })
+
+  it('preserves start caret without select-all when renaming an existing phase', async () => {
+    const props: ComponentProps<typeof PhaseNameEditor> = {
+      name: 'Planning',
+      num: '01',
+      isActive: true,
+      isOpen: true,
+      displayStatus: 'active',
+      progressPercent: 0,
+      doneCount: 0,
+      taskCount: 0,
+      renameKey: 0,
+      isNewPhase: false,
+      onPhaseToggle: vi.fn(),
+      onSave: vi.fn(),
+    }
+    act(() => {
+      root.render(<PhaseNameEditor {...props} />)
+    })
+
+    await act(async () => {
+      root.render(<PhaseNameEditor {...props} renameKey={1} />)
+      await new Promise((resolve) => window.setTimeout(resolve, 0))
+    })
+
+    const input = container.querySelector('input')
+    expect(input).toBeInstanceOf(HTMLInputElement)
+    expect(document.activeElement).toBe(input)
+    expect(input?.selectionStart).toBe(0)
+    expect(input?.selectionEnd).toBe(0)
   })
 })

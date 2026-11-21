@@ -18,6 +18,7 @@ interface PhaseHeaderProps {
   colorLockDisplayName?: string
   showColorPicker: boolean
   renameKey?: number
+  isNewPhase?: boolean
   dragHandleProps?: React.HTMLAttributes<Element>
   onPhaseToggle: () => void
   onNameSave: (name: string) => void
@@ -44,6 +45,7 @@ export function PhaseHeader({
   colorLockDisplayName,
   showColorPicker,
   renameKey,
+  isNewPhase,
   dragHandleProps,
   onPhaseToggle,
   onNameSave,
@@ -78,6 +80,7 @@ export function PhaseHeader({
         doneCount={doneCount}
         taskCount={phase.tasks.length}
         renameKey={renameKey}
+        isNewPhase={isNewPhase}
         onPhaseToggle={onPhaseToggle}
         onSave={onNameSave}
         onEditingChange={onNameEditingChange}

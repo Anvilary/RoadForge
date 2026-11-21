@@ -119,6 +119,7 @@ export function Phase({
   const [dirtyTaskId, setDirtyTaskId] = useState<string | null>(null)
   const [draftCreatedTaskId, setDraftCreatedTaskId] = useState<string | null>(null)
   const [isNameEditing, setIsNameEditing] = useState(false)
+  const [isNewPhase, setIsNewPhase] = useState(Boolean(beginRename))
   const beginRenameHandledRef = useRef(false)
 
   const { locks, serverRoadmapId, sessionToken, participantId } = useRoadmapSession()
@@ -189,7 +190,13 @@ export function Phase({
   }, [isColorLockedByOther, readOnly, tryAcquireColorLock])
 
   const handleNameSave = (name: string) => {
+    setIsNewPhase(false)
     onUpdatePhaseName(phase.id, name)
+  }
+
+  const handleNameEditingChange = (editing: boolean) => {
+    if (!editing) setIsNewPhase(false)
+    setIsNameEditing(editing)
   }
 
   const handleColorTriggerClick = async () => {
@@ -218,6 +225,7 @@ export function Phase({
     }
     if (beginRenameHandledRef.current) return
     beginRenameHandledRef.current = true
+    setIsNewPhase(true)
     void handleMenuRename().finally(() => onBeginRenameHandled?.())
   }, [beginRename, handleMenuRename, onBeginRenameHandled])
 
@@ -380,8 +388,9 @@ export function Phase({
         dragHandleProps={dragHandleProps}
         onPhaseToggle={handlePhaseToggle}
         onNameSave={handleNameSave}
-        onNameEditingChange={setIsNameEditing}
+        onNameEditingChange={handleNameEditingChange}
         renameKey={renameKey}
+        isNewPhase={isNewPhase}
         onMenuRename={handleMenuRename}
         onColorTriggerClick={handleColorTriggerClick}
         onColorClose={closeColorPicker}

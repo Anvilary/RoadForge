@@ -16,6 +16,7 @@ interface PhaseNameEditorProps {
   doneCount: number
   taskCount: number
   renameKey?: number
+  isNewPhase?: boolean
   onPhaseToggle: () => void
   onSave: (name: string) => void
   onEditingChange?: (editing: boolean) => void
@@ -31,6 +32,7 @@ export function PhaseNameEditor({
   doneCount,
   taskCount,
   renameKey,
+  isNewPhase = false,
   onPhaseToggle,
   onSave,
   onEditingChange,
@@ -46,15 +48,20 @@ export function PhaseNameEditor({
     exitEditing,
     handleKeyDown,
     handleBlur,
-  } = usePhaseNameEditor({ name, renameKey, onSave, onEditingChange })
+    handleMouseDown,
+    handleClick,
+  } = usePhaseNameEditor({ name, renameKey, isNewPhase, onSave, onEditingChange })
 
   const summaryProps = {
     name, num, editing, draft, isActive, displayStatus,
     progressPercent, doneCount, taskCount,
     inputRef,
+    isNewPhase,
     onDraftChange: setDraft,
     onKeyDown: handleKeyDown,
     onBlur: handleBlur,
+    onMouseDown: handleMouseDown,
+    onClick: handleClick,
   }
 
   return (
