@@ -35,7 +35,7 @@ from api.features.roadmaps.version_writer import (
     create_roadmap_version,
     should_create_version,
 )
-from api.models.roadmap import ActivityLog, Participant, Roadmap, ShareLink
+from api.models.roadmap import ActivityLog, Participant, Roadmap, RoadmapPublication, ShareLink
 from api.shared.auth.password_service import hash_password
 from api.shared.auth.session_policy import SHARE_PREFIXES, session_expires_at
 from api.shared.auth.share_schemas import ShareLinkResponse
@@ -303,6 +303,16 @@ async def delete_roadmap(
     ))
 
     roadmap.deleted_at = now
+    publication = await db.scalar(
+        select(RoadmapPublication)
+        .where(RoadmapPublication.roadmap_id == roadmap_id)
+        .with_for_update()
+    )
+    if publication is not None:
+        publication.status = "unpublished"
+        publication.public_id = generate_id("pub_")
+        publication.unpublished_at = now
+        publication.updated_at = now
     await enforce_activity_log_cap(db, roadmap.id)
     await db.commit()
 

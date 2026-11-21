@@ -53,6 +53,12 @@ class Roadmap(Base):
     projection_phases: Mapped[list[RoadmapPhase]] = relationship(
         "RoadmapPhase", back_populates="roadmap", cascade="all, delete-orphan"
     )
+    publication: Mapped[RoadmapPublication | None] = relationship(
+        "RoadmapPublication",
+        back_populates="roadmap",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
     __table_args__ = (
         sa.Index("ix_roadmaps_created_at", "created_at"),
@@ -360,4 +366,47 @@ class RoadmapTaskAssignee(Base):
             "ix_roadmap_task_assignees_roadmap_task_position", "roadmap_id", "task_id", "position"
         ),
         sa.Index("ix_roadmap_task_assignees_participant_id", "participant_id"),
+    )
+
+
+class RoadmapPublication(Base):
+    """Explicit public-read publication for one server-backed roadmap.
+
+    ``public_id`` is an opaque public reference. It is not an invite token,
+    session credential, or database key for the private roadmap.
+    """
+
+    __tablename__ = "roadmap_publications"
+
+    id: Mapped[str] = mapped_column(sa.String, primary_key=True)
+    roadmap_id: Mapped[str] = mapped_column(
+        sa.String, sa.ForeignKey("roadmaps.id", ondelete="CASCADE"), nullable=False
+    )
+    public_id: Mapped[str] = mapped_column(sa.String(80), nullable=False)
+    status: Mapped[str] = mapped_column(sa.String(16), nullable=False)
+    published_at: Mapped[datetime | None] = mapped_column(
+        sa.DateTime(timezone=True), nullable=True
+    )
+    unpublished_at: Mapped[datetime | None] = mapped_column(
+        sa.DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.func.now(),
+        onupdate=sa.func.now(),
+    )
+
+    roadmap: Mapped[Roadmap] = relationship("Roadmap", back_populates="publication")
+
+    __table_args__ = (
+        sa.CheckConstraint(
+            "status IN ('published', 'unpublished')",
+            name="ck_roadmap_publications_status",
+        ),
+        sa.UniqueConstraint("roadmap_id", name="uq_roadmap_publications_roadmap"),
+        sa.UniqueConstraint("public_id", name="uq_roadmap_publications_public_id"),
     )
