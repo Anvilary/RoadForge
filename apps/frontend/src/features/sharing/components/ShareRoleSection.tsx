@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { Icon } from '@/shared/ui/Icon'
 import { ParticipantRow } from '@/features/sharing/components/ParticipantRow'
 import type { Participant, ShareLink, ShareRole } from '@/shared/types/roadmap'
@@ -7,6 +8,7 @@ import type { IconName } from '@/shared/ui/Icon'
 
 interface RoleCopy {
   title: string
+  desc?: string
   peopleTitle: string
 }
 
@@ -18,6 +20,7 @@ interface ShareRoleSectionProps {
   expanded: boolean
   copied: string | null
   participantsLoading: boolean
+  ownerExtras?: ReactNode
   onToggle: () => void
   onCopy: (role: string, url: string) => void
   onRegenerate: (targetRole: ShareRole) => void
@@ -40,6 +43,7 @@ export function ShareRoleSection({
   expanded,
   copied,
   participantsLoading,
+  ownerExtras,
   onToggle,
   onCopy,
   onRegenerate,
@@ -65,16 +69,22 @@ export function ShareRoleSection({
           <Icon name={link.icon as IconName} size={16} />
         </span>
         <span className="share-role-title">
-          <span>{roleCopy.title}</span>
-          <span className={`link-state ${link.isActive ? 'active' : ''}`}>
-            {linkStateLabel(link)}
+          <span className="share-role-title-row">
+            <span className="share-role-heading">{roleCopy.title}</span>
+            <span className={`link-state ${link.isActive ? 'active' : ''}`}>
+              {linkStateLabel(link)}
+            </span>
           </span>
+          {roleCopy.desc && (
+            <span className="share-role-summary-desc">{roleCopy.desc}</span>
+          )}
         </span>
         <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={14} />
       </button>
 
       {expanded && (
         <div className="share-role-body">
+          {ownerExtras}
           <div className="share-row compact">
             <div className="meta">
               <div className="h">

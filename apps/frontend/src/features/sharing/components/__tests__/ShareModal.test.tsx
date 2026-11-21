@@ -114,14 +114,25 @@ describe('ShareModal owner password management', () => {
     vi.unstubAllGlobals()
   })
 
-  it('renders password section when server roadmap and owner session are active', () => {
+  it('renders password section when server roadmap and owner session are active and expands on click', () => {
     act(() => {
       root.render(<ShareModal open={true} onClose={vi.fn()} onToast={vi.fn()} />)
     })
 
     const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
-    expect(dialog.textContent).toContain('Roadmap password')
+    expect(dialog.textContent).toContain('Password protection')
     expect(dialog.textContent).toContain('No password required')
+
+    // Starts collapsed
+    const passwordHeader = Array.from(dialog.querySelectorAll('button')).find(
+      (b) => b.textContent?.includes('Password protection'),
+    )!
+    expect(passwordHeader.getAttribute('aria-expanded')).toBe('false')
+
+    // Click to expand
+    act(() => passwordHeader.click())
+    expect(passwordHeader.getAttribute('aria-expanded')).toBe('true')
+
     const setBtn = Array.from(dialog.querySelectorAll('button')).find(
       (b) => b.textContent?.includes('Set password'),
     )
@@ -137,6 +148,11 @@ describe('ShareModal owner password management', () => {
     })
 
     const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const passwordHeader = Array.from(dialog.querySelectorAll('button')).find(
+      (b) => b.textContent?.includes('Password protection'),
+    )!
+    act(() => passwordHeader.click())
+
     const setBtn = Array.from(dialog.querySelectorAll('button')).find(
       (b) => b.textContent?.includes('Set password'),
     )!
@@ -200,6 +216,11 @@ describe('ShareModal owner password management', () => {
     const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
     expect(dialog.textContent).toContain('Password protected')
 
+    const passwordHeader = Array.from(dialog.querySelectorAll('button')).find(
+      (b) => b.textContent?.includes('Password protection'),
+    )!
+    act(() => passwordHeader.click())
+
     const removeBtn = Array.from(dialog.querySelectorAll('button')).find(
       (b) => b.textContent?.includes('Remove password'),
     )!
@@ -227,6 +248,11 @@ describe('ShareModal owner password management', () => {
     })
 
     const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const passwordHeader = Array.from(dialog.querySelectorAll('button')).find(
+      (b) => b.textContent?.includes('Password protection'),
+    )!
+    act(() => passwordHeader.click())
+
     const setBtn = Array.from(dialog.querySelectorAll('button')).find(
       (b) => b.textContent?.includes('Set password'),
     )!
@@ -250,5 +276,43 @@ describe('ShareModal owner password management', () => {
     })
 
     expect(onToast).toHaveBeenCalledWith('Only the owner can manage the roadmap password.')
+  })
+
+  it('starts with all 4 progressive disclosure sections collapsed and resets on reopen', () => {
+    act(() => {
+      root.render(<ShareModal open={true} onClose={vi.fn()} onToast={vi.fn()} />)
+    })
+
+    const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const sectionHeads = Array.from(dialog.querySelectorAll('.share-role-head'))
+    expect(sectionHeads.length).toBe(4)
+
+    // Verify all 4 sections start collapsed
+    for (const head of sectionHeads) {
+      expect(head.getAttribute('aria-expanded')).toBe('false')
+    }
+
+    // Expand the editor section
+    act(() => {
+      (sectionHeads[0] as HTMLElement).click()
+    })
+    expect(sectionHeads[0].getAttribute('aria-expanded')).toBe('true')
+
+    // Close and reopen the modal
+    act(() => {
+      root.render(<ShareModal open={false} onClose={vi.fn()} onToast={vi.fn()} />)
+    })
+    act(() => {
+      root.render(<ShareModal open={true} onClose={vi.fn()} onToast={vi.fn()} />)
+    })
+
+    const reopenedDialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const reopenedHeads = Array.from(reopenedDialog.querySelectorAll('.share-role-head'))
+    expect(reopenedHeads.length).toBe(4)
+
+    // All sections are collapsed again
+    for (const head of reopenedHeads) {
+      expect(head.getAttribute('aria-expanded')).toBe('false')
+    }
   })
 })
