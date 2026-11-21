@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { acquireLock, releaseLock } from '@/features/collaboration/services/locks.service'
-import { ApiError } from '@/shared/http/roadmap-http'
+import { ApiError, isApiConnectionError } from '@/shared/http/roadmap-http'
+
+export type EditLockErrorKind =
+  | 'conflict'
+  | 'connection'
+  | 'session_expired'
+  | 'refresh_failed'
+  | null
 
 interface UseEditLockParams {
   target: string
@@ -21,6 +28,7 @@ interface UseEditLockResult {
   ownsLock: boolean
   isAcquiring: boolean
   isReleasing: boolean
+  lockError: EditLockErrorKind
   tryAcquire: () => Promise<boolean>
   release: () => Promise<void>
 }
@@ -42,13 +50,17 @@ export function useEditLock({
   sessionToken,
   onAcquireError,
 }: UseEditLockParams): UseEditLockResult {
-  const [ownsLock, setOwnsLock] = useState(false)
+  const [ownsServerLock, setOwnsServerLock] = useState(false)
+  const [ownsLocalLock, setOwnsLocalLock] = useState(() => !serverRoadmapId && active)
   const [isAcquiring, setIsAcquiring] = useState(false)
   const [isReleasing, setIsReleasing] = useState(false)
-  const ownsLockRef = useRef(false)
+  const [lockError, setLockError] = useState<EditLockErrorKind>(null)
+  const ownsLockRef = useRef(!serverRoadmapId && active)
   const releasePromiseRef = useRef<Promise<void> | null>(null)
   const lockGenerationRef = useRef(0)
   const releaseRef = useRef<() => Promise<void>>(async () => {})
+
+  const ownsLock = !serverRoadmapId ? (active && ownsLocalLock) : ownsServerLock
 
   const release = useCallback((): Promise<void> => {
     lockGenerationRef.current += 1
@@ -56,7 +68,8 @@ export function useEditLock({
     if (!ownsLockRef.current) return Promise.resolve()
 
     ownsLockRef.current = false
-    setOwnsLock(false)
+    setOwnsLocalLock(false)
+    setOwnsServerLock(false)
 
     if (!serverRoadmapId || !sessionToken) return Promise.resolve()
 
@@ -82,10 +95,19 @@ export function useEditLock({
     if (releasePromiseRef.current) await releasePromiseRef.current
     const lockGeneration = lockGenerationRef.current
 
-    if (!serverRoadmapId || !sessionToken) {
+    if (!serverRoadmapId) {
       ownsLockRef.current = true
-      setOwnsLock(true)
+      setOwnsLocalLock(true)
+      setLockError(null)
       return true
+    }
+
+    if (!sessionToken) {
+      ownsLockRef.current = false
+      setOwnsServerLock(false)
+      setLockError('session_expired')
+      onAcquireError?.(false)
+      return false
     }
 
     setIsAcquiring(true)
@@ -100,10 +122,21 @@ export function useEditLock({
         return false
       }
       ownsLockRef.current = true
-      setOwnsLock(true)
+      setOwnsServerLock(true)
+      setLockError(null)
       return true
     } catch (err) {
-      onAcquireError?.(err instanceof ApiError && err.status === 409)
+      const isConflict = err instanceof ApiError && err.status === 409
+      if (isConflict) {
+        setLockError('conflict')
+      } else if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        setLockError('session_expired')
+      } else if (isApiConnectionError(err)) {
+        setLockError('connection')
+      } else {
+        setLockError('refresh_failed')
+      }
+      onAcquireError?.(isConflict)
       return false
     } finally {
       setIsAcquiring(false)
@@ -113,17 +146,31 @@ export function useEditLock({
   // Refresh the lock every 20s while active (server TTL is 30s).
   // Release on cleanup when active goes false or on unmount.
   useEffect(() => {
-    if (!active || !serverRoadmapId || !sessionToken) return
+    if (!serverRoadmapId) {
+      setOwnsLocalLock(active)
+      ownsLockRef.current = active
+      setLockError(null)
+      return
+    }
+
+    if (!active || !sessionToken) return
 
     const tryRefresh = async () => {
       if (!ownsLockRef.current) return
       try {
         await acquireLock(serverRoadmapId, target, sessionToken)
-      } catch {
+      } catch (err) {
         // Treat a failed refresh as lock loss. The editor keeps its local draft,
         // but must explicitly reacquire before committing.
         ownsLockRef.current = false
-        setOwnsLock(false)
+        setOwnsServerLock(false)
+        if (isApiConnectionError(err)) {
+          setLockError('connection')
+        } else if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          setLockError('session_expired')
+        } else {
+          setLockError('refresh_failed')
+        }
       }
     }
 
@@ -141,5 +188,5 @@ export function useEditLock({
     return () => { void releaseRef.current() }
   }, []) // intentionally empty - runs only on unmount
 
-  return { ownsLock, isAcquiring, isReleasing, tryAcquire, release }
+  return { ownsLock, isAcquiring, isReleasing, lockError, tryAcquire, release }
 }

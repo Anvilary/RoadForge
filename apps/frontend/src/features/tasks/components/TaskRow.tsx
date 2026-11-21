@@ -137,6 +137,7 @@ export function TaskRow({
     ownsLock,
     isAcquiring,
     isReleasing,
+    lockError,
     tryAcquire: tryAcquireLock,
     release: releaseEditLock,
   } = useEditLock({
@@ -146,6 +147,12 @@ export function TaskRow({
     sessionToken,
     onAcquireError: handleEditLockError,
   })
+
+  useEffect(() => {
+    if (startEditing && serverRoadmapId && sessionToken && !readOnly && !isLockedByOther) {
+      void tryAcquireLock()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     isClaiming,
@@ -368,7 +375,17 @@ export function TaskRow({
               <span>
                 {isIdlePaused
                   ? 'Editing paused after 90 seconds of inactivity. Your draft is still here.'
-                  : 'Edit lock unavailable. Your draft is still here.'}
+                  : isLockedByOther
+                    ? `${lockHolderName} is editing this task. Your draft is still here.`
+                    : serverRoadmapId && !sessionToken
+                      ? 'Session expired. Your draft is still here.'
+                      : lockError === 'session_expired'
+                        ? 'Session expired. Your draft is still here.'
+                        : lockError === 'connection'
+                          ? 'Connection unavailable. Your draft is still here.'
+                          : lockError === 'refresh_failed'
+                            ? 'Lock refresh failed. Your draft is still here.'
+                            : 'Edit lock unavailable. Your draft is still here.'}
               </span>
               <button
                 type="button"

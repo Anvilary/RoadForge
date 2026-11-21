@@ -99,6 +99,39 @@ describe('useEditLock', () => {
     expect(mockedReleaseLock).not.toHaveBeenCalled()
   })
 
+  it('grants immediate local lock on mount for local roadmap without waiting for tryAcquire', () => {
+    params = {
+      target: 'task:tk_1',
+      active: true,
+      serverRoadmapId: null,
+      sessionToken: null,
+    }
+    render()
+
+    expect(result.ownsLock).toBe(true)
+    expect(mockedAcquireLock).not.toHaveBeenCalled()
+  })
+
+  it('fails to acquire and does not grant lock when server roadmap is missing session token', async () => {
+    const onAcquireError = vi.fn()
+    params = {
+      ...params,
+      serverRoadmapId: 'rm_1',
+      sessionToken: null,
+      onAcquireError,
+    }
+    render()
+
+    await act(async () => {
+      expect(await result.tryAcquire()).toBe(false)
+    })
+
+    expect(result.ownsLock).toBe(false)
+    expect(result.lockError).toBe('session_expired')
+    expect(onAcquireError).toHaveBeenCalledWith(false)
+    expect(mockedAcquireLock).not.toHaveBeenCalled()
+  })
+
   it('acquires and deduplicates an explicit release', async () => {
     await act(async () => {
       expect(await result.tryAcquire()).toBe(true)
