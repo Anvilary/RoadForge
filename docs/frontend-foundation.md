@@ -121,8 +121,8 @@ JSON remains the canonical portable and importable format.
 - Snapshot normalization happens silently in memory without user-facing upgrade notice banners or
   cascading saves.
 - Active task editor focus and uncommitted user drafts are preserved across remote updates to unrelated entities.
-- Only owners can manage share links, set/change/remove roadmap passwords in `ShareModal.tsx`, revoke
-  participants, delete roadmaps, and restore versions.
+- Only owners can manage share links, set/change/remove roadmap passwords in `ShareModal.tsx`, publish
+  or unpublish a public roadmap, revoke participants, delete roadmaps, and restore versions.
 - Viewers cannot mutate roadmap state.
 
 ## Styling

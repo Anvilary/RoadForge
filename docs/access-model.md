@@ -36,6 +36,24 @@ and should be rotated after the hardened release is deployed.
 
 A viewer invite grants read-only collaboration access. It is an access credential, not a
 public publishing URL, and its raw token is reveal-once exactly like owner/editor invites.
+Creating or rotating a viewer invite never publishes the roadmap.
+
+## Public publication
+
+Public publishing is a separate owner opt-in for a server-backed roadmap. It is intended
+for the 0.3.0 line and is not part of the 0.2.0 release behavior described above. The
+hosted demo is not described here as already serving published roadmaps.
+
+An owner publishes from Share. The server stores one publication row and issues an opaque
+`pub_` identifier. That identifier is a public reference, not an invite token, session
+token, or password. Anonymous visitors can read only the published field allowlist.
+Editors and viewers cannot change publication state. A browser-only roadmap has no public
+address; saving to the server and publishing are separate confirmations.
+
+Unpublishing rotates the public identifier. New requests stop returning roadmap data.
+Copies already cached by a browser, GitHub, or another site cannot be recalled.
+Republishing creates a new public link. The full contract is
+[Public roadmap publishing](public-roadmap-publishing.md).
 While the share-link record remains active, the issued credential can continue authorizing
 future joins, but ordinary share-link listing cannot reconstruct the raw URL. Migration
 `0011` revokes legacy viewer links whose raw token had been persisted and drops the old

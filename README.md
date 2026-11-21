@@ -93,6 +93,11 @@ Owner/editor/viewer invite links and participant sessions are bearer credentials
 privately. Viewer invites grant read-only collaboration access; they are not public publishing
 links. Display names are collaboration labels, not verified identities.
 
+Public publishing is a separate owner action for a server-backed roadmap. It is documented
+in [Public roadmap publishing](docs/public-roadmap-publishing.md) and is intended for 0.3.0.
+It is not enabled by a viewer invite, and this README does not describe it as already
+available on the hosted demo.
+
 Task assignees and server participants are separate concepts: an assignee is roadmap
 data; a participant is a joined server session.
 

@@ -33,6 +33,11 @@ The route/service code is authoritative for exact values. The maintained baselin
 | Event-ticket requests | trusted client IP + roadmap | 60/minute |
 | Share-link rotation | owner + roadmap + role | 5/minute |
 | Share-link revocation | owner + roadmap + role | 10/minute |
+| Publication read | owner participant | 60/minute |
+| Publish or republish | owner participant | 10/minute |
+| Unpublish | owner participant | 10/minute |
+| Public roadmap read | trusted client IP | 120/minute |
+| Public roadmap image | trusted client IP | 30/minute |
 
 Other authenticated write/recovery actions also use participant/action buckets where the
 router defines them. Do not add one broad global bucket in place of action-specific limits:

@@ -20,6 +20,7 @@ With RoadForge, you can organize ambitious projects into clear phases, break dow
 10. [Local-First Persistence and Recovery](#local-first-persistence-and-recovery)
 11. [Import, Export, and Backups](#import-export-and-backups)
 12. [Collaboration and Server Sync](#collaboration-and-server-sync)
+    - [Public roadmap publishing](#public-roadmap-publishing)
 13. [Model Context Protocol (MCP) Integration](#model-context-protocol-mcp-integration)
 14. [Keyboard Navigation and Shortcuts](#keyboard-navigation-and-shortcuts)
 
@@ -220,6 +221,34 @@ RoadForge deliberately avoids account systems, using cryptographic bearer creden
 - **Edit Locks:** Opening a task editor acquires a transient edit lock, preventing teammates from unintentionally overwriting active edits.
 - **Task Claiming:** Contributors can claim specific tasks to signal active ownership to the team.
 - **Version History & Restore:** Owners can inspect snapshot history and roll back accidental deletions.
+
+### Public roadmap publishing
+
+Public publishing is optional and separate from private invites. It is available in this
+application build for server-backed roadmaps. A roadmap that exists only in the browser
+cannot publish a live view. Enable sharing first. That save does not publish the roadmap
+and does not upload it until you confirm Enable sharing.
+
+After the roadmap is saved on the server, open **Share** and expand **Publish roadmap**.
+Publishing shows what visitors will see. Saved changes to those public fields, including
+new tasks, become public. Unsaved edits stay private until they are saved.
+
+The published state offers:
+
+1. A viewer link anyone can open without signing in.
+2. GitHub Markdown that shows a preview image and links to the viewer.
+3. A website iframe for the read-only embed.
+
+The live viewer follows the latest saved published roadmap. GitHub and other sites cache
+remote images, so a README preview can lag behind the viewer. You do not change the
+Markdown URL after each task update. Unpublishing stops new visits and creates a different
+link if you publish again. It cannot erase a copy that another site already stored.
+
+The public page includes the attribution "Built with RoadForge by Anvilary.Tools". The
+embed cannot turn that attribution off.
+
+Technical details, self-hosting, and privacy limits are in
+[Public roadmap publishing](public-roadmap-publishing.md).
 
 ---
 

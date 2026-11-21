@@ -56,6 +56,13 @@ The public browser Origin must exactly match `ROADFORGE_CORS_ORIGINS`. Those ori
 both CORS and the defense-in-depth Origin check for unsafe cookie-authenticated roadmap
 requests.
 
+`ROADFORGE_WEB_BASE_URL` is the origin used in public viewer, embed, and preview-image
+URLs. In production it must be the HTTPS origin with no path, and it must also be listed
+in `ROADFORGE_CORS_ORIGINS`. The reference nginx topology serves the web app and `/api/`
+on that same origin. Do not point snippet URLs at a request `Host` header. Public
+publishing behavior, including the `/embed/` framing exception, is documented in
+[Public roadmap publishing](public-roadmap-publishing.md).
+
 ## Deployment and updates
 
 For first deploys and schema-sensitive updates:

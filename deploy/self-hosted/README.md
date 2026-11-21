@@ -23,8 +23,13 @@ Expected paths for this reference deployment:
 - persistent PostgreSQL data: `/opt/data/apps/roadforge/postgres`
 - central nginx configuration: `/opt/data/proxy/nginx/conf.d`
 
-RoadForge is public by default. Invite links provide roadmap-scoped access; Cloudflare
-Access is not part of the standard product flow.
+RoadForge is reachable by default. Invite links provide roadmap-scoped access; Cloudflare
+Access is not part of the standard product flow. A roadmap stays private until an owner
+publishes it. The nginx `location /embed/` block omits `X-Frame-Options` so a published
+embed can be framed. Do not add a zone-wide `X-Frame-Options: DENY` that also covers
+`/embed/`. Set `ROADFORGE_WEB_BASE_URL` to the public HTTPS origin before copying
+Markdown or iframe snippets. See
+[`docs/public-roadmap-publishing.md`](../../docs/public-roadmap-publishing.md).
 
 ## Before using RoadForge for a team
 
