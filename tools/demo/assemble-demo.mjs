@@ -65,19 +65,10 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   const targetThumbnailPath = path.join(mediaDir, 'roadforge-demo-thumbnail.png')
   const targetGifPath = path.join(mediaDir, 'roadforge-demo-preview.gif')
 
-  // Target duration: 85s - 95s (target 90s)
-  let durationArg = []
-  if (rawDuration > 93.5) {
-    const maxDur = 90.5
-    console.log(`Raw duration ${rawDuration.toFixed(1)}s exceeds 93.5s; trimming to ${maxDur}s with clean end`)
-    durationArg = ['-t', String(maxDur)]
-  }
-
   console.log('--- Step 1: Transcoding to Master MP4 (1920x1080 30FPS H.264 Lanczos) ---')
   await runCommand('ffmpeg', [
     '-y',
     '-i', rawPath,
-    ...durationArg,
     '-vf', 'scale=1920:1080:flags=lanczos',
     '-c:v', 'libx264',
     '-pix_fmt', 'yuv420p',
@@ -99,11 +90,11 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   console.log(`  Resolution: ${videoStream.width}x${videoStream.height}`)
   console.log(`  Codec: ${videoStream.codec_name} (${videoStream.pix_fmt})`)
   console.log(`  Frame rate: ${videoStream.r_frame_rate} (target 30/1)`)
-  console.log(`  Duration: ${finalDuration.toFixed(2)}s (target 85s - 95s)`)
+  console.log(`  Duration: ${finalDuration.toFixed(2)}s (target ~2m 30s to 3m)`)
   console.log(`  File size: ${finalSizeMb} MB`)
 
-  if (finalDuration < 85.0 || finalDuration > 95.0) {
-    throw new Error(`Master MP4 duration ${finalDuration.toFixed(1)}s outside acceptable 85-95s window!`)
+  if (finalDuration < 130.0 || finalDuration > 220.0) {
+    throw new Error(`Master MP4 duration ${finalDuration.toFixed(1)}s outside acceptable narrative window!`)
   }
   if (videoStream.width !== 1920 || videoStream.height !== 1080) {
     throw new Error(`Master MP4 resolution ${videoStream.width}x${videoStream.height} is not 1920x1080!`)
@@ -111,10 +102,10 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
 
   // --- Step 2: Extract Thumbnail (1920x1080) ---
   console.log('\n--- Step 2: Extracting Beauty Showcase Thumbnail ---')
-  // Use beauty hold frame or 3.5s before end
-  let thumbTime = Math.max(1, Math.floor(finalDuration - 3.5))
+  // Use steady beauty hold frame (6.0s before end, right in the middle of the 14s hold)
+  let thumbTime = Math.max(1, Math.floor(finalDuration - 6.0))
   if (manifest?.scenes?.beauty_hold) {
-    thumbTime = Math.min(manifest.scenes.beauty_hold + 3.0, finalDuration - 1.5)
+    thumbTime = Math.min(manifest.scenes.beauty_hold + 6.0, finalDuration - 3.0)
   }
 
   await runCommand('ffmpeg', [
@@ -135,10 +126,10 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
 
   // --- Step 3: High-Quality Looping Preview GIF (800x450, 10s) ---
   console.log('\n--- Step 3: Generating Optimized Preview GIF ---')
-  // Choose the exciting unblocking highlight (dependency resolution and progress leap)
-  let gifStart = Math.max(10, Math.floor(finalDuration * 0.70))
-  if (manifest?.scenes?.act4_unblock_start) {
-    gifStart = manifest.scenes.act4_unblock_start - 1.0
+  // Choose the high-signal unblocking highlight (dependency creation, blocked badge, unblock, progress jump)
+  let gifStart = Math.max(10, Math.floor(finalDuration * 0.68))
+  if (manifest?.scenes?.act4_blocked_hold) {
+    gifStart = manifest.scenes.act4_blocked_hold - 1.5
   }
   const gifDuration = 10.0
 
