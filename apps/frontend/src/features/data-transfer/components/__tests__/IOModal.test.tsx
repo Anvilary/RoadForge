@@ -111,16 +111,12 @@ describe('IOModal Markdown export', () => {
       root.render(<IOModal open={true} onClose={onClose} onToast={onToast} />)
     })
 
-    const exportTab = Array.from(container.querySelectorAll('button'))
-      .find((button) => button.textContent === 'Export')
-    expect(exportTab).toBeDefined()
-
-    act(() => {
-      exportTab?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    })
+    // Both Export and Import sections are visible in the unified initial view
+    expect(container.textContent).toContain('Export your roadmap')
+    expect(container.textContent).toContain('Import a roadmap')
 
     const markdownButton = Array.from(container.querySelectorAll('button'))
-      .find((button) => button.textContent?.includes('Download readable Markdown'))
+      .find((button) => button.textContent?.includes('Download Markdown'))
     expect(markdownButton).toBeDefined()
     expect(container.textContent ?? '').not.toMatch(/PDF/i)
 
@@ -142,5 +138,22 @@ describe('IOModal Markdown export', () => {
     expect(onToast).toHaveBeenNthCalledWith(2, 'Markdown file downloaded')
     expect(onToast.mock.calls.flat().join(' ')).not.toMatch(/coming soon/i)
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('exposes file selection for import with safety reassurance in initial view', () => {
+    const onClose = vi.fn()
+    const onToast = vi.fn()
+
+    act(() => {
+      root.render(<IOModal open={true} onClose={onClose} onToast={onToast} />)
+    })
+
+    expect(container.textContent).toContain(
+      'Your current roadmap remains unchanged unless you explicitly choose to modify it.',
+    )
+
+    const chooseButton = Array.from(container.querySelectorAll('button'))
+      .find((button) => button.textContent?.includes('Choose JSON file'))
+    expect(chooseButton).toBeDefined()
   })
 })

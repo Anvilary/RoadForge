@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import { Icon } from '@/shared/ui/Icon'
 import { ImportConflictReviewPanel } from '@/features/data-transfer/components/ImportConflictReviewPanel'
-import type { PendingImport } from '@/features/data-transfer/lib/import-merge/types'
+import type { ImportMode, PendingImport } from '@/features/data-transfer/lib/import-merge/types'
 
 interface ImportNoticeProps {
   pendingImport: PendingImport
+  canReplaceCurrent?: boolean
+  onModeChange?: (mode: ImportMode) => void
   onConfirm: () => void
   onCancel: () => void
   error: string | null
@@ -156,6 +158,8 @@ function confirmLabel(mode: PendingImport['mode']): string {
 
 export function ImportNotice({
   pendingImport,
+  canReplaceCurrent = true,
+  onModeChange,
   onConfirm,
   onCancel,
   error,
@@ -183,6 +187,64 @@ export function ImportNotice({
         <Icon name="import" size={14} />
         <span>Selected file</span>
         <strong>{pendingImport.fileName}</strong>
+      </div>
+
+      <div className="import-operation-selector">
+        <span className="import-operation-label">Choose import action:</span>
+        <div className="import-operation-options" role="radiogroup" aria-label="Import operation">
+          <label className={`import-operation-option ${mode === 'new-local' ? 'selected' : ''}`}>
+            <input
+              type="radio"
+              name="import-mode"
+              value="new-local"
+              checked={mode === 'new-local'}
+              onChange={() => onModeChange?.('new-local')}
+              disabled={isConfirming}
+            />
+            <div className="import-operation-text">
+              <span className="import-operation-title">Create a new roadmap</span>
+              <span className="import-operation-desc">
+                Creates a separate browser-local roadmap. Your current roadmap is preserved.
+              </span>
+            </div>
+          </label>
+
+          <label className={`import-operation-option ${mode === 'safe-additions' ? 'selected' : ''}`}>
+            <input
+              type="radio"
+              name="import-mode"
+              value="safe-additions"
+              checked={mode === 'safe-additions'}
+              onChange={() => onModeChange?.('safe-additions')}
+              disabled={isConfirming}
+            />
+            <div className="import-operation-text">
+              <span className="import-operation-title">Add new content to current roadmap</span>
+              <span className="import-operation-desc">
+                Adds new phases and tasks without modifying existing content.
+              </span>
+            </div>
+          </label>
+
+          <label className={`import-operation-option ${mode === 'replace-current' ? 'selected' : ''}`}>
+            <input
+              type="radio"
+              name="import-mode"
+              value="replace-current"
+              checked={mode === 'replace-current'}
+              onChange={() => onModeChange?.('replace-current')}
+              disabled={isConfirming || !canReplaceCurrent}
+            />
+            <div className="import-operation-text">
+              <span className="import-operation-title">Replace current roadmap</span>
+              <span className="import-operation-desc">
+                {canReplaceCurrent
+                  ? 'Overwrites the current roadmap with the imported file. Destructive.'
+                  : 'Unavailable in read-only mode.'}
+              </span>
+            </div>
+          </label>
+        </div>
       </div>
       <div className={`note-line ${isReplace ? 'warning' : ''}`}>
         <span className="ic">

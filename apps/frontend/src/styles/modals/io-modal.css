@@ -1,5 +1,153 @@
 /* ─── Import / export modal styles ──────────────────────────────────────────── */
 
+/* ─── Unified IO layout ─────────────────────────────────────────────────── */
+.io-unified-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.io-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-faint);
+  border-radius: 10px;
+}
+.io-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.io-section-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.io-section-title-row .ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-faint);
+  display: grid;
+  place-items: center;
+  color: var(--ember);
+  flex-shrink: 0;
+}
+.io-section-title-row h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.io-section-title-row p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+.io-export-actions,
+.io-import-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.io-section-note,
+.io-section-reassurance {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+.io-section-reassurance {
+  color: var(--ink-2);
+}
+.io-advanced-details {
+  border: 1px solid var(--border-faint);
+  border-radius: 8px;
+  background: var(--bg-2);
+  padding: 8px 12px;
+}
+.io-advanced-summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+  cursor: pointer;
+  outline: none;
+}
+.io-advanced-summary:hover {
+  color: var(--ink);
+}
+.io-advanced-content {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.io-advanced-content p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+
+/* ─── Mode Selector in Import Preview ────────────────────────────────────── */
+.import-operation-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.import-operation-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.import-operation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.import-operation-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border-faint);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.import-operation-option:hover {
+  border-color: var(--border);
+  background: var(--bg-3);
+}
+.import-operation-option.selected {
+  border-color: var(--ember);
+  background: color-mix(in oklab, var(--ember-2) 6%, var(--bg));
+}
+.import-operation-option input[type="radio"] {
+  margin-top: 3px;
+  accent-color: var(--ember);
+}
+.import-operation-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.import-operation-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.import-operation-desc {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.35;
+}
+
 /* ─── Tab switcher ─────────────────────────────────────────────────────────── */
 .io-tab {
   display: grid;

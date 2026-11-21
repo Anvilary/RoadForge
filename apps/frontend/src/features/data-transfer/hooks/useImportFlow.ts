@@ -63,12 +63,46 @@ export function useImportFlow({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const importModeRef = useRef<ImportMode>('new-local')
 
-  const selectImportFile = useCallback((mode: ImportMode) => {
+  const selectImportFile = useCallback((mode: ImportMode = 'new-local') => {
     importModeRef.current = mode
     setImportError(null)
     onToast('Choose a RoadForge JSON file to preview.')
     fileInputRef.current?.click()
   }, [onToast])
+
+  const changeImportMode = useCallback((nextMode: ImportMode) => {
+    setPendingImport((prev) => {
+      if (!prev) return null
+      let mergePreview = prev.mergePreview
+      let currentStats = prev.currentStats
+
+      if (nextMode === 'safe-additions') {
+        const importedRegistry = prev.result.tagRegistry ?? buildRegistryFromPhases(prev.result.phases)
+        const mergeResult = applySafeAdditions(phases, prev.result.phases, tagRegistry, importedRegistry)
+        mergePreview = {
+          ...mergeResult.preview,
+          repairsCount: prev.result.repairs.length,
+          warningsCount: prev.result.warnings.length + prev.upgradeNotices.length,
+        }
+      } else {
+        mergePreview = buildBasicPreview(prev.result, prev.upgradeNotices)
+      }
+
+      if (nextMode === 'replace-current') {
+        currentStats = {
+          phaseCount: phases.length,
+          taskCount: phases.reduce((sum, p) => sum + p.tasks.length, 0),
+        }
+      }
+
+      return {
+        ...prev,
+        mode: nextMode,
+        mergePreview,
+        currentStats,
+      }
+    })
+  }, [phases, tagRegistry])
 
   const handleCancelPendingImport = useCallback(() => {
     setPendingImport(null)
@@ -232,6 +266,7 @@ export function useImportFlow({
     importError,
     isConfirming,
     selectImportFile,
+    changeImportMode,
     handleImportFile,
     handleConfirm,
     handleCancelPendingImport,

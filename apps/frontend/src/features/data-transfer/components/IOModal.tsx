@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Modal } from '@/shared/ui/Modal'
 import { Icon } from '@/shared/ui/Icon'
-import { ImportActions } from '@/features/data-transfer/components/ImportActions'
 import { ImportNotice } from '@/features/data-transfer/components/ImportNotice'
 import { useImportFlow } from '@/features/data-transfer/hooks/useImportFlow'
 import { exportRoadmap } from '@/features/data-transfer/services/data-transfer.service'
@@ -27,17 +26,7 @@ interface IOModalProps {
   ) => void
 }
 
-type IOMode = 'export' | ImportMode
-
-const MODE_TABS: Array<{ id: IOMode; label: string }> = [
-  { id: 'export', label: 'Export' },
-  { id: 'new-local', label: 'Import as new copy' },
-  { id: 'safe-additions', label: 'Merge into current' },
-  { id: 'replace-current', label: 'Replace current' },
-]
-
 export function IOModal({ open, onClose, onToast, onRoadmapImported }: IOModalProps) {
-  const [mode, setMode] = useState<IOMode>('new-local')
   const {
     roadmapName,
     phases,
@@ -59,6 +48,7 @@ export function IOModal({ open, onClose, onToast, onRoadmapImported }: IOModalPr
     importError,
     isConfirming,
     selectImportFile,
+    changeImportMode,
     handleImportFile,
     handleConfirm,
     handleCancelPendingImport,
@@ -81,7 +71,6 @@ export function IOModal({ open, onClose, onToast, onRoadmapImported }: IOModalPr
 
   useEffect(() => {
     if (!open) return
-    setMode('new-local')
     handleCancelPendingImport()
   }, [open, handleCancelPendingImport])
 
@@ -166,100 +155,118 @@ export function IOModal({ open, onClose, onToast, onRoadmapImported }: IOModalPr
     onClose()
   }, [handleCancelPendingImport, isConfirming, onClose])
 
-  const selectMode = (nextMode: IOMode) => {
-    if (isConfirming) return
-    setMode(nextMode)
-    handleCancelPendingImport()
-  }
-
   return (
     <Modal
       open={open}
       onClose={handleClose}
       dismissible
       canDismiss={() => !isConfirming}
-      width={560}
-      icon={{ name: mode === 'export' ? 'export' : 'import', plain: true }}
+      width={580}
+      icon={{ name: 'import-export', plain: true }}
       title="Import / Export roadmap"
-      sub="JSON is canonical and importable. Markdown is presentation-only."
+      sub="Download or import portable RoadForge JSON and Markdown files."
       footer={
         <>
           <span className="note">Exports and file previews stay on this device.</span>
           <span className="spacer" />
-          <button className="back" onClick={handleClose} disabled={isConfirming}>
+          <button className="btn sm ghost" onClick={handleClose} disabled={isConfirming}>
             Cancel
           </button>
         </>
       }
     >
-      <div className="io-tab" role="tablist" aria-label="Import or export mode">
-        {MODE_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={mode === tab.id}
-            className={mode === tab.id ? 'active' : ''}
-            onClick={() => selectMode(tab.id)}
-            disabled={isConfirming}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {mode === 'export' ? (
-        <section className="io-mode-panel">
-          <div className="io-mode-copy">
-            <strong>Download a portable roadmap export</strong>
-            <p>
-              JSON remains the canonical backup and import format. Markdown is a
-              readable, non-importable view. Sessions, invite links, passwords, and
-              browser authentication are excluded.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn sm primary io-primary-action"
-            onClick={handleJsonExport}
-          >
-            <Icon name="export" size={14} />
-            Download .roadforge.json
-          </button>
-
-          <button
-            type="button"
-            className="io-secondary-action"
-            onClick={handleMarkdownExport}
-          >
-            <Icon name="export" size={14} />
-            Download readable Markdown
-          </button>
-
-          <button
-            type="button"
-            className="io-secondary-action"
-            onClick={handleGeneratorTemplateExport}
-          >
-            <Icon name="robot" size={14} />
-            Download roadmap generator template
-          </button>
-        </section>
-      ) : pendingImport ? (
+      {pendingImport ? (
         <ImportNotice
           pendingImport={pendingImport}
+          canReplaceCurrent={canReplaceCurrent}
+          onModeChange={changeImportMode}
           onConfirm={handleConfirm}
           onCancel={handleCancelPendingImport}
           error={importError}
           isConfirming={isConfirming}
         />
       ) : (
-        <ImportActions
-          mode={mode}
-          canReplaceCurrent={canReplaceCurrent}
-          serverRoadmapId={serverRoadmapId}
-          onSelectImportFile={selectImportFile}
-        />
+        <div className="io-unified-layout">
+          {/* Section 1: Export */}
+          <section className="io-section io-export-section">
+            <div className="io-section-header">
+              <div className="io-section-title-row">
+                <span className="ic">
+                  <Icon name="export" size={16} />
+                </span>
+                <div>
+                  <h3>Export your roadmap</h3>
+                  <p>Download a copy of your roadmap.</p>
+                </div>
+              </div>
+            </div>
+            <div className="io-export-actions">
+              <button
+                type="button"
+                className="btn sm primary io-btn"
+                onClick={handleJsonExport}
+              >
+                <Icon name="export" size={14} />
+                Download JSON
+              </button>
+              <button
+                type="button"
+                className="btn sm ghost io-btn"
+                onClick={handleMarkdownExport}
+              >
+                <Icon name="export" size={14} />
+                Download Markdown
+              </button>
+            </div>
+            <div className="io-section-note">
+              JSON is the supported backup and import format. Markdown is a readable export.
+            </div>
+          </section>
+
+          {/* Section 2: Import */}
+          <section className="io-section io-import-section">
+            <div className="io-section-header">
+              <div className="io-section-title-row">
+                <span className="ic">
+                  <Icon name="import" size={16} />
+                </span>
+                <div>
+                  <h3>Import a roadmap</h3>
+                  <p>Open a RoadForge JSON file.</p>
+                </div>
+              </div>
+            </div>
+            <div className="io-import-actions">
+              <button
+                type="button"
+                className="btn sm primary io-btn"
+                onClick={() => selectImportFile('new-local')}
+              >
+                <Icon name="import" size={14} />
+                Choose JSON file
+              </button>
+            </div>
+            <div className="io-section-reassurance">
+              Your current roadmap remains unchanged unless you explicitly choose to modify it.
+            </div>
+          </section>
+
+          {/* Section 3: Advanced */}
+          <details className="io-advanced-details">
+            <summary className="io-advanced-summary">Advanced</summary>
+            <div className="io-advanced-content">
+              <p>Download our prompt template for AI models to generate roadmaps in RoadForge JSON format.</p>
+              <button
+                type="button"
+                className="btn sm ghost io-btn"
+                onClick={handleGeneratorTemplateExport}
+              >
+                <Icon name="robot" size={14} />
+                Download generator template
+              </button>
+            </div>
+          </details>
+        </div>
       )}
 
       <input
