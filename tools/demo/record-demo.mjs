@@ -609,20 +609,12 @@ async function main() {
   const ioBtn = page.getByRole('button', { name: 'Import / Export' })
   await smoothClick(page, ioBtn, 1200)
 
-  const exportTab = page.getByRole('tab', { name: 'Export' })
-  if (await exportTab.isVisible()) {
-    await smoothClick(page, exportTab, 800)
-  }
-
-  const downloadJsonBtn = page.getByRole('button', { name: /Download \.roadforge\.json/ })
+  const downloadJsonBtn = page.getByRole('button', { name: 'Download JSON' })
   await smoothClick(page, downloadJsonBtn, 2000)
 
   // Re-open modal to export readable Markdown
   await smoothClick(page, ioBtn, 1200)
-  if (await exportTab.isVisible()) {
-    await smoothClick(page, exportTab, 800)
-  }
-  const downloadMdBtn = page.getByRole('button', { name: /Download readable Markdown/ })
+  const downloadMdBtn = page.getByRole('button', { name: 'Download Markdown' })
   await smoothClick(page, downloadMdBtn, 2000)
 
   console.log('--- SCENE 11: Final Roadmap Showcase ---')
