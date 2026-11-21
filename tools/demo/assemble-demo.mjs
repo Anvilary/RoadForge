@@ -23,7 +23,7 @@ function probeVideo(filePath) {
   return new Promise((resolve, reject) => {
     const proc = spawn('ffprobe', [
       '-v', 'error',
-      '-show_entries', 'format=duration,size:stream=width,height,r_frame_rate,codec_name,pix_fmt',
+      '-show_entries', 'format=duration,size:stream=width,height,r_frame_rate,codec_name,pix_fmt,color_space,color_primaries,color_transfer',
       '-of', 'json',
       filePath,
     ])
@@ -65,16 +65,19 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   const targetThumbnailPath = path.join(mediaDir, 'roadforge-demo-thumbnail.png')
   const targetGifPath = path.join(mediaDir, 'roadforge-demo-preview.gif')
 
-  console.log('--- Step 1: Transcoding to Master MP4 (1920x1080 30FPS H.264 Lanczos) ---')
+  console.log('--- Step 1: Transcoding to Master MP4 (Native 1920x1080 30FPS H.264 High Profile CRF 16 BT.709) ---')
   await runCommand('ffmpeg', [
     '-y',
     '-i', rawPath,
     '-vf', 'scale=1920:1080:flags=lanczos',
+    '-colorspace', 'bt709',
+    '-color_primaries', 'bt709',
+    '-color_trc', 'bt709',
     '-c:v', 'libx264',
     '-pix_fmt', 'yuv420p',
     '-r', '30',
     '-preset', 'slow',
-    '-crf', '18',
+    '-crf', '16',
     '-movflags', '+faststart',
     targetMp4Path,
   ])
@@ -89,11 +92,12 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   console.log(`  Path: ${targetMp4Path}`)
   console.log(`  Resolution: ${videoStream.width}x${videoStream.height}`)
   console.log(`  Codec: ${videoStream.codec_name} (${videoStream.pix_fmt})`)
+  console.log(`  Color Space: ${videoStream.color_space} (${videoStream.color_primaries}/${videoStream.color_transfer})`)
   console.log(`  Frame rate: ${videoStream.r_frame_rate} (target 30/1)`)
-  console.log(`  Duration: ${finalDuration.toFixed(2)}s (target ~2m 30s to 3m)`)
+  console.log(`  Duration: ${finalDuration.toFixed(2)}s (target ~2m 30s to 3m 40s)`)
   console.log(`  File size: ${finalSizeMb} MB`)
 
-  if (finalDuration < 130.0 || finalDuration > 220.0) {
+  if (finalDuration < 130.0 || finalDuration > 260.0) {
     throw new Error(`Master MP4 duration ${finalDuration.toFixed(1)}s outside acceptable narrative window!`)
   }
   if (videoStream.width !== 1920 || videoStream.height !== 1080) {

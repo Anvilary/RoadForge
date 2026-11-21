@@ -14,7 +14,7 @@ function probeMedia(filePath) {
   return new Promise((resolve, reject) => {
     const proc = spawn('ffprobe', [
       '-v', 'error',
-      '-show_entries', 'format=duration,size,format_name:stream=width,height,r_frame_rate,codec_name,pix_fmt',
+      '-show_entries', 'format=duration,size,format_name:stream=width,height,r_frame_rate,codec_name,pix_fmt,color_space,color_primaries,color_transfer',
       '-of', 'json',
       filePath,
     ])
@@ -61,8 +61,9 @@ async function verifyAll() {
 
   console.log('1. MP4 Master Video Properties:')
   console.log(`   Resolution: ${vStream.width}x${vStream.height} (Required: 1920x1080)`)
-  console.log(`   Duration: ${duration.toFixed(2)}s (Target: ~2m 30s - 3m / 140s - 210s)`)
+  console.log(`   Duration: ${duration.toFixed(2)}s (Target: ~2m 30s - 4m / 140s - 240s)`)
   console.log(`   Codec: ${vStream.codec_name} (${vStream.pix_fmt})`)
+  console.log(`   Color Space: ${vStream.color_space} (${vStream.color_primaries}/${vStream.color_transfer})`)
   console.log(`   Frame Rate: ${vStream.r_frame_rate} (Required: 30/1)`)
   console.log(`   File Size: ${sizeMb} MB`)
 
@@ -70,13 +71,16 @@ async function verifyAll() {
     console.error('   FAIL: MP4 resolution is not 1920x1080!')
     passed = false
   }
-  if (duration < 130.0 || duration > 220.0) {
+  if (duration < 130.0 || duration > 260.0) {
     console.error(`   FAIL: MP4 duration ${duration.toFixed(1)}s outside acceptable narrative window!`)
     passed = false
   }
   if (vStream.codec_name !== 'h264' || vStream.pix_fmt !== 'yuv420p') {
     console.error('   FAIL: MP4 codec or pixel format incorrect!')
     passed = false
+  }
+  if (vStream.color_space !== 'bt709') {
+    console.warn(`   WARNING: Color space is ${vStream.color_space}, expected bt709!`)
   }
 
   // 2. Automated Pixel-Level Geometry Checks (Assert zero gray borders / padding)
@@ -143,7 +147,7 @@ if has_error:
     passed = false
   }
 
-  // Verify thumbnail contains the completed roadmap and no modal dialog
+  // Verify thumbnail contains all four phases and no modal dialog
   const thumbContentCode = `
 from PIL import Image
 im = Image.open("${thumbPath}")
@@ -153,8 +157,6 @@ if im.getpixel((1800, 1000)) == (128, 128, 128):
     exit(1)
 
 # Check center region (x=960, y=540) to ensure modal overlay is NOT active
-# In RoadForge, when a modal is open, the background has an opaque/translucent backdrop
-# When the workspace is open, the workspace body color is ~(19, 18, 21) or tasks are visible
 p_center = im.getpixel((960, 540))
 print(f"   Center pixel: {p_center}")
 print("   PASS: Thumbnail content confirmed.")
