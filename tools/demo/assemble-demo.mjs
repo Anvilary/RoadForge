@@ -65,11 +65,10 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   const targetThumbnailPath = path.join(mediaDir, 'roadforge-demo-thumbnail.png')
   const targetGifPath = path.join(mediaDir, 'roadforge-demo-preview.gif')
 
-  console.log('--- Step 1: Transcoding to Master MP4 (Native 1920x1080 30FPS H.264 High Profile CRF 16 BT.709) ---')
+  console.log('--- Step 1: Transcoding to Master MP4 (Native 1920x1080 30FPS H.264 High Profile CRF 12 BT.709) ---')
   await runCommand('ffmpeg', [
     '-y',
     '-i', rawPath,
-    '-vf', 'scale=1920:1080:flags=lanczos',
     '-colorspace', 'bt709',
     '-color_primaries', 'bt709',
     '-color_trc', 'bt709',
@@ -77,7 +76,7 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
     '-pix_fmt', 'yuv420p',
     '-r', '30',
     '-preset', 'slow',
-    '-crf', '16',
+    '-crf', '12',
     '-movflags', '+faststart',
     targetMp4Path,
   ])
