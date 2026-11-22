@@ -119,7 +119,7 @@ test('desktop Hero keeps metadata within the initial viewport', { timeout: 60_00
     assert.ok(landingBrand.heroTop >= landingBrand.headerBottom - 1, 'the Hero must remain below the sticky header')
 
     await page.goto(`${baseUrl}/workspace`)
-    assert.equal(await page.locator('.brand-mini').getAttribute('href'), '/#hero', 'workspace brand must return to the Hero')
+    assert.equal(await page.locator('.app-header .brand').getAttribute('href'), '/#hero', 'workspace brand must return to the Hero')
   } finally {
     await Promise.allSettled([browser?.close(), stopServer(server)])
   }
