@@ -183,7 +183,7 @@ for (const viewport of HEADER_VIEWPORTS) {
       startingPoint: 'blank',
     })
 
-    const report = page.getByRole('link', { name: /Report a problem with RoadForge/ })
+    const report = page.locator('.app-header').getByRole('link', { name: /Report a problem with RoadForge/ })
     await expect(report).toBeVisible()
     await expect(report).toHaveAttribute('href', ISSUE_CHOOSER_URL)
     await expect(report).toHaveAttribute('aria-label', /Privacy warning/)

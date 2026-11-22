@@ -64,9 +64,13 @@ async function setupSharedRoadmap(browser: Browser): Promise<SharedRoadmapFixtur
   const shareModal = ownerPage.getByRole('dialog', { name: /Share this roadmap/i })
   await expect(shareModal).toBeVisible()
 
-  // Find editor invite section, rotate/generate to reveal active URL, and copy invite code
-  const editorSection = shareModal.locator('.share-role-section', { hasText: 'Private editor invite' })
+  // Find editor invite section, expand it, rotate/generate to reveal active URL, and copy invite code
+  const editorSection = shareModal.locator('.share-role-section', { hasText: 'Editor access' })
   await expect(editorSection).toBeVisible()
+  const editorHead = editorSection.locator('.share-role-head')
+  if ((await editorHead.getAttribute('aria-expanded')) !== 'true') {
+    await editorHead.click()
+  }
 
   const rotateOrGenerateBtn = editorSection.getByRole('button', { name: /Rotate link|Generate invite/i })
   await expect(rotateOrGenerateBtn).toBeVisible()
@@ -694,6 +698,10 @@ test.describe('Real Multi-Client Browser Collaboration', () => {
       const ownerShareModal = ownerPage.getByRole('dialog', { name: /Share this roadmap/i })
       await expect(ownerShareModal).toBeVisible()
 
+      const passwordHead = ownerShareModal.locator('.roadmap-password-accordion .share-role-head')
+      await expect(passwordHead).toBeVisible()
+      await passwordHead.click()
+
       const passwordSection = ownerShareModal.locator('.roadmap-password-section')
       await expect(passwordSection).toBeVisible()
       await expect(passwordSection).toContainText('Require a password in addition to invite links')
@@ -745,6 +753,7 @@ test.describe('Real Multi-Client Browser Collaboration', () => {
       // 4. Owner changes password
       await ownerShareBtn.click()
       await expect(ownerShareModal).toBeVisible()
+      await passwordHead.click()
       await passwordSection.getByRole('button', { name: 'Change password' }).click()
       await pwInput.fill('new-pass-456')
       await passwordSection.getByRole('button', { name: 'Save' }).click()
@@ -757,6 +766,7 @@ test.describe('Real Multi-Client Browser Collaboration', () => {
       // 5. Owner removes password
       await ownerShareBtn.click()
       await expect(ownerShareModal).toBeVisible()
+      await passwordHead.click()
       await passwordSection.getByRole('button', { name: 'Remove password' }).click()
       await expect(passwordSection).toContainText('Require a password in addition to invite links', { timeout: 5000 })
       await ownerShareModal.getByRole('button', { name: 'Done' }).click()
