@@ -10,13 +10,14 @@ import {
 import { TagInput, splitAndNormalizeTags } from '@/features/tags/components/TagInput'
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { MarkdownToolbar } from './MarkdownToolbar'
+import { ComplexitySelect } from './ComplexitySelect'
 import {
   createTaskEditDraft,
   isTaskEditDraftDirty,
   itemsMatch,
   type TaskEditDraft,
 } from '@/features/tasks/lib/task-edit'
-import { TASK_COMPLEXITY_LEVELS, getTaskComplexity, getTaskComplexityOption } from '@/shared/domain/task-complexity'
+import { getTaskComplexity, getTaskComplexityOption } from '@/shared/domain/task-complexity'
 import type { Task, TaskComplexity, TagDefinition } from '@/shared/types/roadmap'
 
 interface FieldConflict {
@@ -429,24 +430,18 @@ export function TaskEditForm({
           />
         )}
       </div>
-      <div className="field">
-        <label htmlFor={`edit-complexity-${task.id}`}>Complexity</label>
-        <select
-          id={`edit-complexity-${task.id}`}
-          value={draft.complexity}
-          onChange={(e) => setDraft({ ...draft, complexity: e.target.value as TaskComplexity })}
-        >
-          {TASK_COMPLEXITY_LEVELS.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-              disabled={option.value === 'very_high' && (isNested || directSubtaskCount < 2)}
-            >
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <small>{complexityOption.description}</small>
+      <div className="field complexity-field">
+        <div className="complexity-row">
+          <label htmlFor={`edit-complexity-${task.id}`}>Complexity</label>
+          <ComplexitySelect
+            id={`edit-complexity-${task.id}`}
+            value={draft.complexity}
+            isNested={isNested}
+            directSubtaskCount={directSubtaskCount}
+            onChange={(complexity) => setDraft({ ...draft, complexity })}
+          />
+        </div>
+        <small className="complexity-description">{complexityOption.description}</small>
         {!isNested && directSubtaskCount < 2 && draft.complexity !== 'very_high' && (
           <small>Very high unlocks after this task has at least two direct subtasks.</small>
         )}

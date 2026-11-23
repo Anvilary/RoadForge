@@ -22,6 +22,40 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
 input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 
+/* ─── Form controls: 8px radius, dark surface, subtle border, single focus boundary ─── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea,
+select {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--ink);
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):hover:not(:focus):not(:disabled),
+textarea:hover:not(:focus):not(:disabled),
+select:hover:not(:focus):not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--ember);
+  background: var(--bg);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: var(--border-faint);
+  background: var(--bg-inset);
+}
+
 /* Anchor nav offset for sticky header */
 section[id] { scroll-margin-top: var(--header-h); }
 

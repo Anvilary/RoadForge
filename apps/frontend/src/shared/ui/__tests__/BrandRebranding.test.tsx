@@ -19,7 +19,7 @@ describe('RoadForge visual rebranding and assets', () => {
 
     const img = container.querySelector('img')
     expect(img).not.toBeNull()
-    expect(decodeURIComponent(img?.getAttribute('src') || '')).toContain('/brand/roadforge/logo.png')
+    expect(decodeURIComponent(img?.getAttribute('src') || '')).toContain('/brand/anvilary-tools/logo.png')
     expect(img?.getAttribute('width')).toBe('28')
     expect(img?.getAttribute('height')).toBe('28')
     expect(container.textContent).toContain('RoadForge')

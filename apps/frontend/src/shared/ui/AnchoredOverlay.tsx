@@ -14,7 +14,7 @@ import {
 import { createPortal } from 'react-dom'
 import { canRestoreFocus, trapDialogTabFocus } from '@/shared/lib/dialog-focus'
 
-type OverlayRole = 'menu' | 'dialog'
+type OverlayRole = 'menu' | 'dialog' | 'listbox'
 type HorizontalAlignment = 'start' | 'end'
 
 interface AnchoredOverlayPositionInput {
@@ -79,7 +79,7 @@ interface AnchoredOverlayProps {
 
 function focusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(
-    '[role="menuitem"]:not([disabled]), button:not([disabled]), input:not([disabled]), '
+    '[role="menuitem"]:not([disabled]), [role="option"]:not([disabled]):not([aria-disabled="true"]), button:not([disabled]):not([aria-disabled="true"]), input:not([disabled]), '
       + 'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
   ))
 }
@@ -202,7 +202,7 @@ export function AnchoredOverlay({
       trapDialogTabFocus(event.nativeEvent, overlay)
       return
     }
-    if (role !== 'menu') return
+    if (role !== 'menu' && role !== 'listbox') return
     const items = focusableElements(overlay)
     const currentIndex = items.indexOf(document.activeElement as HTMLElement)
     let nextIndex: number | null = null

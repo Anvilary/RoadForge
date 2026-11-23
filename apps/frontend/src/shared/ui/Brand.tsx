@@ -32,7 +32,7 @@ export function Brand({
       <span className="brand-logo" aria-hidden="true">
         <Image
           className="brand-logo-img"
-          src="/brand/roadforge/logo.png"
+          src="/brand/anvilary-tools/logo.png"
           alt=""
           width={computedLogoSize}
           height={computedLogoSize}

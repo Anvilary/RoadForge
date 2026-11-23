@@ -502,7 +502,7 @@ describe('Accessibility Unit Tests', () => {
 
     // Check Complexity association
     const complexityLabel = container.querySelector('label[for="edit-complexity-t1"]')
-    const complexityInput = container.querySelector('select[id="edit-complexity-t1"]')
+    const complexityInput = container.querySelector('#edit-complexity-t1')
     expect(complexityLabel).not.toBeNull()
     expect(complexityInput).not.toBeNull()
 

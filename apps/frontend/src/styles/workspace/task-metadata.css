@@ -209,7 +209,7 @@
 .tag-chip-input {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 5px 8px;
   font-size: 13px;
   color: var(--ink);

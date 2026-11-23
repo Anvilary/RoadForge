@@ -5,7 +5,7 @@
   justify-content: space-between;
   height: 72px;
   min-height: 72px;
-  padding: 0 32px;
+  padding: 0 max(32px, calc((100% - var(--container)) / 2 + 32px));
   box-sizing: border-box;
   background: var(--chrome-surface);
   backdrop-filter: blur(var(--chrome-blur));

@@ -93,8 +93,8 @@ describe('TaskEditForm safety and conflict resolution', () => {
     expect(descTextarea.value).toBe('My active draft description')
 
     // Unrelated remote update (complexity: high) was incorporated
-    const complexitySelect = container.querySelector('#edit-complexity-task-1') as HTMLSelectElement
-    expect(complexitySelect.value).toBe('high')
+    const complexitySelect = container.querySelector('#edit-complexity-task-1') as HTMLElement
+    expect(complexitySelect.getAttribute('data-value')).toBe('high')
 
     // No conflict alert should be visible since the edited field was not touched remotely
     expect(container.querySelector('.task-field-conflict')).toBeNull()

@@ -21,17 +21,164 @@
 }
 .edit-session-status .btn { flex: 0 0 auto; }
 .edit-form .field { display: flex; flex-direction: column; gap: 4px; }
-.edit-form label { font-size: 11px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; }
+.edit-form label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .edit-form input, .edit-form textarea {
   padding: 8px 10px; background: var(--bg-2);
-  border: 1px solid var(--border); border-radius: 6px;
+  border: 1px solid var(--border); border-radius: 8px;
   font-size: 13.5px; color: var(--ink); outline: none;
+  transition: border-color 150ms ease, background 150ms ease;
 }
-.edit-form input:focus, .edit-form textarea:focus { border-color: var(--ember); background: var(--bg); }
+.edit-form input:hover:not(:focus):not(:disabled),
+.edit-form textarea:hover:not(:focus):not(:disabled) {
+  border-color: var(--border-strong);
+}
+.edit-form input:focus, .edit-form textarea:focus,
+.edit-form input:focus-visible, .edit-form textarea:focus-visible {
+  outline: none;
+  border-color: var(--ember);
+  background: var(--bg);
+}
 .edit-form textarea {
   min-height: 112px;
   resize: vertical;
   line-height: 1.45;
+}
+
+/* ─── Inline Complexity Row (Change 2 & 3) ─────────────────────────────────── */
+.complexity-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.complexity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.complexity-row label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex: 0 0 auto;
+}
+.complexity-select-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+.complexity-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 120px;
+  padding: 6px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.complexity-select-trigger:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--bg-3);
+}
+.complexity-select-trigger:focus,
+.complexity-select-trigger:focus-visible,
+.complexity-select-trigger.open {
+  outline: none;
+  border-color: var(--ember);
+  background: var(--bg);
+}
+.complexity-select-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.complexity-select-value {
+  white-space: nowrap;
+}
+.complexity-select-chevron {
+  color: var(--ink-4);
+  transition: transform 160ms ease, color 160ms ease;
+  flex-shrink: 0;
+}
+.complexity-select-trigger:hover .complexity-select-chevron,
+.complexity-select-trigger.open .complexity-select-chevron {
+  color: var(--ink-2);
+}
+.complexity-select-trigger.open .complexity-select-chevron {
+  transform: rotate(180deg);
+}
+
+/* ─── Complexity Dropdown Overlay ─────────────────────────────────────────── */
+.complexity-dropdown-overlay {
+  min-width: 140px;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: var(--z-popover, 50);
+}
+.complexity-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+.complexity-option-btn:hover:not(:disabled),
+.complexity-option-btn:focus:not(:disabled),
+.complexity-option-btn:focus-visible:not(:disabled) {
+  background: var(--bg-2);
+  color: var(--ink);
+  outline: none;
+}
+.complexity-option-btn.selected {
+  background: var(--bg-3);
+  color: var(--ember);
+  font-weight: 600;
+}
+.complexity-option-btn:disabled,
+.complexity-option-btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: var(--ink-4);
+}
+.complexity-option-check {
+  color: var(--ember);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.complexity-description {
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.4;
 }
 @media (max-width: 640px) {
   .edit-session-status {
@@ -48,7 +195,7 @@
   padding: 8px 10px;
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   color: var(--ink-2);
 }

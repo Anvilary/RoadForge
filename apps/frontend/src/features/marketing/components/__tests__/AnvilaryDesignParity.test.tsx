@@ -42,7 +42,7 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     expect(brand).not.toBeNull()
     const logoImg = brand?.querySelector('img.brand-logo-img')
     expect(logoImg).not.toBeNull()
-    expect(decodeURIComponent(logoImg?.getAttribute('src') || '')).toContain('/brand/roadforge/logo.png')
+    expect(decodeURIComponent(logoImg?.getAttribute('src') || '')).toContain('/brand/anvilary-tools/logo.png')
     expect(logoImg?.getAttribute('width')).toBe('80')
     expect(logoImg?.getAttribute('height')).toBe('80')
     expect(brand?.textContent).toContain('RoadForge')
