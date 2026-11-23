@@ -63,6 +63,7 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
 
   const targetMp4Path = path.join(mediaDir, 'roadforge-product-demo.mp4')
   const targetThumbnailPath = path.join(mediaDir, 'roadforge-demo-thumbnail.png')
+  const targetWebpPath = path.join(mediaDir, 'roadforge-demo.webp')
   const targetGifPath = path.join(mediaDir, 'roadforge-demo-preview.gif')
 
   console.log('--- Step 1: Transcoding to Master MP4 (Native 1920x1080 30FPS H.264 High Profile CRF 12 BT.709) ---')
@@ -127,21 +128,39 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
     throw new Error(`Thumbnail resolution is not 1920x1080!`)
   }
 
-  // --- Step 3: High-Quality Looping README GIF (800x450, ~14s Top-to-Bottom Smooth Scroll) ---
-  console.log('\n--- Step 3: Generating Top-to-Bottom Roadmap Overview GIF ---')
-  // Extract continuous top-to-bottom scroll sequence from Act 5
-  let gifStart = Math.max(10, Math.floor(finalDuration * 0.85))
-  let gifDuration = 14.0
+  // --- Step 3: High-Quality Looping README Animated WebP (960x540, 30FPS, ~13s Smooth Scroll) ---
+  console.log('\n--- Step 3: Generating Top-to-Bottom Roadmap Overview Animated WebP ---')
+  let scrollStart = 146.6
+  let scrollDuration = 12.8
   if (manifest?.scenes?.scroll_showcase_start && manifest?.scenes?.scroll_showcase_end) {
-    gifStart = manifest.scenes.scroll_showcase_start
-    gifDuration = Math.min(manifest.scenes.scroll_showcase_end - manifest.scenes.scroll_showcase_start, 15.0)
+    scrollStart = manifest.scenes.scroll_showcase_start
+    scrollDuration = Math.min(manifest.scenes.scroll_showcase_end - manifest.scenes.scroll_showcase_start, 15.0)
   }
 
-  console.log(`Extracting GIF scroll showcase at ${gifStart.toFixed(1)}s (duration ${gifDuration.toFixed(1)}s)...`)
+  console.log(`Extracting WebP scroll showcase at ${scrollStart.toFixed(1)}s (duration ${scrollDuration.toFixed(1)}s)...`)
   await runCommand('ffmpeg', [
     '-y',
-    '-ss', String(gifStart),
-    '-t', String(gifDuration),
+    '-ss', String(scrollStart),
+    '-t', String(scrollDuration),
+    '-i', targetMp4Path,
+    '-vf', 'fps=30,scale=960:540:flags=lanczos',
+    '-c:v', 'libwebp_anim',
+    '-loop', '0',
+    '-lossless', '0',
+    '-q:v', '90',
+    '-preset', 'drawing',
+    targetWebpPath,
+  ])
+
+  const webpStat = statSync(targetWebpPath)
+  console.log(`  WebP size: ${(webpStat.size / (1024 * 1024)).toFixed(2)} MB`)
+
+  // --- Step 4: Fallback Looping Preview GIF (800x450, ~13s Smooth Scroll) ---
+  console.log('\n--- Step 4: Generating Fallback Preview GIF ---')
+  await runCommand('ffmpeg', [
+    '-y',
+    '-ss', String(scrollStart),
+    '-t', String(scrollDuration),
     '-i', targetMp4Path,
     '-vf', 'fps=12,scale=800:450:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3',
     targetGifPath,
@@ -155,8 +174,8 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
     console.log('Optimizing GIF palette and frame rate for optimal web delivery...')
     await runCommand('ffmpeg', [
       '-y',
-      '-ss', String(gifStart),
-      '-t', String(gifDuration),
+      '-ss', String(scrollStart),
+      '-t', String(scrollDuration),
       '-i', targetMp4Path,
       '-vf', 'fps=10,scale=800:450:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=96:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3',
       targetGifPath,
@@ -174,6 +193,7 @@ export async function assembleDemo(rawVideoPath, manifestPath) {
   return {
     mp4: { path: targetMp4Path, duration: finalDuration, sizeMb: finalSizeMb },
     thumbnail: { path: targetThumbnailPath },
+    webp: { path: targetWebpPath, sizeMb: (webpStat.size / (1024 * 1024)).toFixed(2) },
     gif: { path: targetGifPath, sizeMb: (gifStat.size / (1024 * 1024)).toFixed(2) },
   }
 }

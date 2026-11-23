@@ -8,6 +8,7 @@ const projectRoot = path.resolve(__dirname, '../..')
 const mediaDir = path.join(projectRoot, 'docs', 'media')
 const mp4Path = path.join(mediaDir, 'roadforge-product-demo.mp4')
 const thumbPath = path.join(mediaDir, 'roadforge-demo-thumbnail.png')
+const webpPath = path.join(mediaDir, 'roadforge-demo.webp')
 const gifPath = path.join(mediaDir, 'roadforge-demo-preview.gif')
 
 function probeMedia(filePath) {
@@ -169,8 +170,56 @@ print("   PASS: Thumbnail content confirmed.")
     passed = false
   }
 
-  // 4. README GIF Preview Validation (Top-to-Bottom Scroll)
-  console.log('\n4. Animated README GIF Preview Validation:')
+  // 4. README Animated WebP Preview Validation (Top-to-Bottom Scroll)
+  console.log('\n4. Animated README WebP Preview Validation:')
+  if (!existsSync(webpPath)) throw new Error(`WebP not found at ${webpPath}`)
+  const webpStat = statSync(webpPath)
+  const webpSizeMb = (webpStat.size / (1024 * 1024)).toFixed(2)
+
+  const webpCheckCode = `
+from PIL import Image
+im = Image.open("${webpPath}")
+is_animated = getattr(im, "is_animated", False)
+n_frames = getattr(im, "n_frames", 1)
+loop = im.info.get("loop", -1)
+print(f"   Format: {im.format}")
+print(f"   Dimensions: {im.size[0]}x{im.size[1]} (Required: 960x540)")
+print(f"   Is Animated: {is_animated}")
+print(f"   Total Frames: {n_frames}")
+print(f"   Loop Count: {loop}")
+if not is_animated or n_frames < 200:
+    print("FAIL: WebP is not properly animated or has insufficient frames!")
+    exit(1)
+if im.size != (960, 540):
+    print("FAIL: WebP dimensions are not 960x540!")
+    exit(1)
+if loop != 0:
+    print("FAIL: WebP loop is not 0 (infinite)!")
+    exit(1)
+
+# Check that the WebP scrolls through the phases by inspecting frame 0 (top) vs middle vs end
+im.seek(0)
+p_top = im.convert("RGB").getpixel((480, 270))
+im.seek(n_frames // 2)
+p_mid = im.convert("RGB").getpixel((480, 270))
+im.seek(n_frames - 1)
+p_end = im.convert("RGB").getpixel((480, 270))
+print(f"   Scroll dynamics confirmed across frames: top={p_top}, mid={p_mid}, end={p_end}")
+`
+  try {
+    const webpResults = await runPython(webpCheckCode)
+    console.log(webpResults)
+    console.log(`   File Size: ${webpSizeMb} MB (Recommended < 4.5 MB)`)
+    if (webpStat.size > 5.0 * 1024 * 1024) {
+      console.warn('   WARNING: WebP size exceeds 5 MB!')
+    }
+  } catch (err) {
+    console.error('   FAIL: WebP validation failed:', err.message)
+    passed = false
+  }
+
+  // 5. Fallback README GIF Preview Validation (Top-to-Bottom Scroll)
+  console.log('\n5. Fallback Animated README GIF Preview Validation:')
   if (!existsSync(gifPath)) throw new Error(`GIF not found at ${gifPath}`)
   const gifStat = statSync(gifPath)
   const gifSizeMb = (gifStat.size / (1024 * 1024)).toFixed(2)

@@ -27,16 +27,25 @@ engineering repository is being prepared for the `0.1.0` baseline independently
 from any future relicensing decision. Forking or self-hosting does not grant commercial use
 outside the current license terms.
 
-## See RoadForge in Action
+## Product Demonstration
 
-Watch RoadForge build a 4-phase engineering roadmap from scratch, organize milestones, break down deliverables into subtasks, link prerequisite dependencies, track completion progress, and export portable backups:
+Watch RoadForge build a 4-phase engineering roadmap from scratch, organize milestones, break down deliverables into subtasks, link prerequisite dependencies, track completion progress, and export portable backups (high-DPI browser recording, 176 seconds):
 
-[![RoadForge Product Demonstration](docs/media/roadforge-demo-preview.gif)](docs/media/roadforge-product-demo.mp4)
+[![RoadForge Official Demonstration](docs/media/roadforge-demo.webp)](https://github.com/Anvilary/RoadForge/issues/96)
 
-> [!TIP]
-> Click the preview animation above to view the full product demonstration video ([`docs/media/roadforge-product-demo.mp4`](docs/media/roadforge-product-demo.mp4)).
-> A high-resolution frame is available in [`docs/media/roadforge-demo-thumbnail.png`](docs/media/roadforge-demo-thumbnail.png).
-> For comprehensive feature walkthroughs, workflows, and keyboard navigation, refer to the [RoadForge User Guide](docs/user-guide.md).
+> 📹 **[Click here to watch the full HD demonstration video (MP4, 19.9 MB)](https://github.com/Anvilary/RoadForge/issues/96)**
+
+<details>
+<summary><strong>Video Scene Breakdown & Demonstration Transcript</strong></summary>
+
+1. **Scene 1: Create the Project & Onboarding (0:00 - 0:14)**: Landing hero overview, launching the roadmap creation dialog, entering display name "Developer", setting title "Launching a Developer Tool", choosing blank template, and dismissing the onboarding guide.
+2. **Scene 2: Structure the 4-Phase Lifecycle (0:14 - 0:27)**: Constructing the complete engineering lifecycle by adding "Development", "Testing", and "Release" phases to the initial Planning phase, verifying phase expansion and clean placeholders.
+3. **Scene 3: Engineering Deliverables & Subtask Breakdown (0:27 - 1:43)**: Adding "Define product requirements" with nested subtasks ("Target developer personas", "Establish acceptance criteria"), creating "Implement frontend components", checking off completed subtasks, and populating full deliverables across all four phases.
+4. **Scene 4: Planning Intelligence & Dependency Unblocking (1:43 - 2:22)**: Assigning complexity ratings and tags ("Core", "Engine"), adding Markdown architecture notes, configuring prerequisite dependencies between "Verify production builds" and "Publish the release", highlighting amber "Blocked" indicators, and completing testing prerequisites to demonstrate automatic blocker clearance and progress advancement.
+5. **Scene 5: Data Portability & Complete Roadmap Showcase (2:22 - 2:56)**: Verifying local data portability with JSON preview/export, followed by a continuous top-to-bottom scroll overview across all four phases, and concluding with a steady 12-second beauty showcase of the complete engineering roadmap.
+
+*Note: All project titles, tasks, and team credentials shown in the demonstration are fictional.*
+</details>
 
 ## Product contract
 

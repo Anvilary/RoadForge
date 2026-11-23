@@ -18,6 +18,7 @@ async function main() {
   console.log('\n=== PRODUCTION COMPLETE ===')
   console.log('Master MP4:', results.mp4.path, `(${results.mp4.duration.toFixed(1)}s, ${results.mp4.sizeMb} MB)`)
   console.log('Thumbnail:', results.thumbnail.path)
+  console.log('Preview WebP:', results.webp.path, `(${results.webp.sizeMb} MB)`)
   console.log('Preview GIF:', results.gif.path, `(${results.gif.sizeMb} MB)`)
 }
 
