@@ -501,9 +501,11 @@ export async function recordDemoRaw() {
   await editDetailsBtn.waitFor({ state: 'visible' })
   await smoothClick(page, editDetailsBtn, 300)
 
-  const complexitySelect = page.locator('select[id^="edit-complexity-"]')
-  await smoothClick(page, complexitySelect, 200)
-  await complexitySelect.selectOption('high')
+  const complexityTrigger = page.locator('.complexity-select-trigger').first()
+  await smoothClick(page, complexityTrigger, 300)
+  await sleep(400) // Allow dropdown to expand cleanly
+  const highOption = page.locator('.complexity-option-btn', { hasText: /^High/ }).first()
+  await smoothClick(page, highOption, 300)
   await sleep(800) // Pause to show complexity selected as High
 
   const descTextarea = page.locator('textarea[id^="edit-desc-"]')
