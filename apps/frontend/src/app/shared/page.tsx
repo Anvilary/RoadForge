@@ -1,15 +1,12 @@
-'use client'
+import type { Metadata } from 'next'
+import { createNoIndexMetadata } from '@/shared/lib/seo'
+import { SharedPageClient } from './SharedPageClient'
 
-import { useRouter } from 'next/navigation'
-import { Workspace } from '@/features/workspace/components/Workspace'
+export const metadata: Metadata = createNoIndexMetadata(
+  'Shared Roadmap',
+  'Read-only collaborative view for an invited RoadForge roadmap.',
+)
 
 export default function SharedPage() {
-  const router = useRouter()
-
-  return (
-    <Workspace
-      mode="viewer"
-      onCreateOwn={() => router.push('/')}
-    />
-  )
+  return <SharedPageClient />
 }

@@ -1,11 +1,41 @@
 import type { Metadata } from 'next'
 import { ProblemReportLink } from '@/shared/ui/ProblemReportLink'
+import {
+  HELP_DESCRIPTION,
+  HELP_FULL_TITLE,
+  HELP_TITLE,
+  SITE_NAME,
+  SOCIAL_PREVIEW_IMAGE,
+  buildHelpJsonLd,
+  serializeJsonLd,
+} from '@/shared/lib/seo'
 import { HelpClient, type SectionData } from './HelpClient'
 import './help.css'
 
 export const metadata: Metadata = {
-  title: 'Help · RoadForge',
-  description: 'A practical guide to local roadmaps, sharing, backups, self-hosting, and recovery.',
+  title: HELP_TITLE,
+  description: HELP_DESCRIPTION,
+  alternates: {
+    canonical: '/help',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: 'website',
+    url: '/help',
+    siteName: SITE_NAME,
+    title: HELP_FULL_TITLE,
+    description: HELP_DESCRIPTION,
+    images: [SOCIAL_PREVIEW_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: HELP_FULL_TITLE,
+    description: HELP_DESCRIPTION,
+    images: [SOCIAL_PREVIEW_IMAGE.url],
+  },
 }
 
 export const SECTIONS: SectionData[] = [
@@ -59,7 +89,10 @@ export const SECTIONS: SectionData[] = [
         <p>
           Open <strong>Import / Export</strong> from the workspace header.
           JSON is the portable backup format and can be imported again.
-          Markdown is a readable snapshot for people and agents.
+          Markdown is a readable snapshot for people and agents. For
+          server-synced roadmaps, the optional{' '}
+          <code>@anvilary/roadforge-mcp</code> stdio server provides bounded
+          MCP read and edit tools over participant-scoped credentials.
         </p>
         <p>
           RoadForge validates an import and shows a preview before changing
@@ -202,5 +235,17 @@ export const SECTIONS: SectionData[] = [
 ]
 
 export default function HelpPage() {
-  return <HelpClient sections={SECTIONS} />
+  const helpJsonLd = buildHelpJsonLd()
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(helpJsonLd),
+        }}
+      />
+      <HelpClient sections={SECTIONS} />
+    </>
+  )
 }

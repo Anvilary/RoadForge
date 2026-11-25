@@ -145,19 +145,21 @@ export function HelpClient({ sections }: HelpClientProps) {
                 id={section.id}
                 className={`help-accordion-item ${isOpen ? 'expanded' : 'collapsed'}`}
               >
-                <button
-                  type="button"
-                  id={headerId}
-                  className="help-accordion-trigger"
-                  aria-expanded={isOpen}
-                  aria-controls={panelId}
-                  onClick={() => handleToggle(section.id)}
-                >
-                  <h2 className="help-accordion-title">{section.title}</h2>
-                  <span className="help-accordion-chevron" aria-hidden="true">
-                    <Icon name="chevron-down" size={18} />
-                  </span>
-                </button>
+                <h2 className="help-accordion-heading">
+                  <button
+                    type="button"
+                    id={headerId}
+                    className="help-accordion-trigger"
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    onClick={() => handleToggle(section.id)}
+                  >
+                    <span className="help-accordion-title">{section.title}</span>
+                    <span className="help-accordion-chevron" aria-hidden="true">
+                      <Icon name="chevron-down" size={18} />
+                    </span>
+                  </button>
+                </h2>
 
                 <div
                   id={panelId}

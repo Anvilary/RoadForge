@@ -4,6 +4,10 @@ import path from 'node:path'
 const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../..'),
+  // All route metadata is static/synchronous; blocking metadata ensures every
+  // crawler (including AI search bots and non-JS fetchers) receives <head>
+  // canonical, Open Graph, and noindex directives in initial HTML.
+  htmlLimitedBots: /.*/,
   async headers() {
     return [
       {

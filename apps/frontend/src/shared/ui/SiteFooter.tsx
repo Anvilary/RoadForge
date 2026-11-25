@@ -35,6 +35,8 @@ export function SiteFooter() {
         <span className="dot" aria-hidden="true">·</span>
         <span>RoadForge · Pre-release · An Anvilary product · Hosted demo</span>
         <span className="dot" aria-hidden="true">·</span>
+        <a href="/help">Help</a>
+        <span className="dot" aria-hidden="true">·</span>
         <a
           href="https://github.com/Anvilary/RoadForge"
           target="_blank"

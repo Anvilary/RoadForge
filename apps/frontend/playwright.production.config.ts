@@ -9,6 +9,7 @@ export default defineConfig({
     '**/csp.spec.ts',
     '**/clean-beta-smoke.spec.ts',
     '**/hydration.spec.ts',
+    '**/seo.spec.ts',
   ],
   fullyParallel: false,
   workers: 1,

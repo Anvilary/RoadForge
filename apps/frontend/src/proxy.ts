@@ -6,6 +6,14 @@ import {
   resolveContentSecurityPolicyMode,
 } from '@/shared/lib/content-security-policy'
 
+const NOINDEX_PATH_PREFIXES = ['/workspace', '/shared', '/join']
+
+function isNoIndexPath(pathname: string): boolean {
+  return NOINDEX_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
+}
+
 function createNonce(): string {
   return btoa(crypto.randomUUID())
 }
@@ -50,6 +58,10 @@ export function proxy(request: NextRequest) {
   // A nonce is valid for exactly one response. Do not let a reverse proxy/CDN
   // cache HTML carrying a nonce and replay it to later requests.
   response.headers.set('Cache-Control', 'private, no-store')
+
+  if (isNoIndexPath(request.nextUrl.pathname)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  }
 
   return response
 }

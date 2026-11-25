@@ -2,37 +2,40 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { StorageWriteFailureBanner } from '@/shared/ui/StorageWriteFailureBanner'
 import { RoadmapProvider } from '@/features/synchronization/components/RoadmapProvider'
+import {
+  HOME_DESCRIPTION,
+  HOME_TITLE,
+  SITE_NAME,
+  SITE_URL,
+  SOCIAL_PREVIEW_IMAGE,
+} from '@/shared/lib/seo'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://roadforge.anvilary.tools'),
-  title: 'RoadForge',
-  description:
-    'RoadForge by Anvilary is a local-first roadmap planner with portable exports and optional accountless collaboration.',
-  alternates: {
-    canonical: '/',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: HOME_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
+  description: HOME_DESCRIPTION,
   openGraph: {
     type: 'website',
-    url: '/',
-    siteName: 'RoadForge',
-    title: 'RoadForge',
-    description:
-      'Local-first roadmap planning with portable exports and optional accountless collaboration.',
+    siteName: SITE_NAME,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     images: [
       {
         url: '/brand/roadforge/social-preview.png',
-        width: 1200,
-        height: 630,
-        alt: 'RoadForge',
+        width: SOCIAL_PREVIEW_IMAGE.width,
+        height: SOCIAL_PREVIEW_IMAGE.height,
+        alt: SOCIAL_PREVIEW_IMAGE.alt,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RoadForge',
-    description:
-      'Local-first roadmap planning with portable exports and optional accountless collaboration.',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     images: ['/brand/roadforge/social-preview.png'],
   },
   manifest: '/site.webmanifest',

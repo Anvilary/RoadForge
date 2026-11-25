@@ -1,44 +1,54 @@
-'use client'
+import type { Metadata } from 'next'
+import { HomePageClient } from './HomePageClient'
+import {
+  HOME_DESCRIPTION,
+  HOME_TITLE,
+  SITE_NAME,
+  SOCIAL_PREVIEW_IMAGE,
+  buildHomeJsonLd,
+  serializeJsonLd,
+} from '@/shared/lib/seo'
 
-import { Suspense, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Homepage } from '@/features/marketing/components/Homepage'
-import { CreateWizard } from '@/features/roadmaps/components/CreateWizard'
-
-function HomePageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [showWizard, setShowWizard] = useState(false)
-
-  useEffect(() => {
-    if (searchParams.get('create') === '1') {
-      setShowWizard(true)
-      router.replace('/')
-    }
-  }, [router, searchParams])
-
-  const handleWizardComplete = (roadmapId?: string) => {
-    setShowWizard(false)
-    router.push(roadmapId ? `/workspace?roadmap=${encodeURIComponent(roadmapId)}` : '/workspace')
-  }
-
-  return (
-    <>
-      <Homepage onCreate={() => setShowWizard(true)} />
-      {showWizard && (
-        <CreateWizard
-          onComplete={handleWizardComplete}
-          onClose={() => setShowWizard(false)}
-        />
-      )}
-    </>
-  )
+export const metadata: Metadata = {
+  title: {
+    absolute: HOME_TITLE,
+  },
+  description: HOME_DESCRIPTION,
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: SITE_NAME,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: [SOCIAL_PREVIEW_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: [SOCIAL_PREVIEW_IMAGE.url],
+  },
 }
 
 export default function HomePage() {
+  const homeJsonLd = buildHomeJsonLd()
+
   return (
-    <Suspense>
-      <HomePageContent />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(homeJsonLd),
+        }}
+      />
+      <HomePageClient />
+    </>
   )
 }

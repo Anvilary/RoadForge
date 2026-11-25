@@ -6,7 +6,7 @@ export function HowItWorksSection() {
     <LandingSectionFrame
       id="how"
       title="Planning that stays in one place."
-      lede="Notes in one app, tickets in another, decisions lost in chat. RoadForge keeps the plan in a single structured file - local by default, portable always."
+      lede="Keep milestones, phases, tasks, and dependencies in one structured roadmap built for solo builders and small teams - local by default, portable always."
     >
       <div className="steps">
         <div className="step-card">
@@ -14,8 +14,8 @@ export function HowItWorksSection() {
           <span className="num">STEP 01</span>
           <h3>Start locally.</h3>
           <p>
-            Open RoadForge, name your roadmap. Everything saves to your device -
-            no account, no internet required.
+            Open RoadForge and name your roadmap. Everything saves to your browser local
+            storage offline - no account, no setup, and no backend required.
           </p>
         </div>
         <div className="step-card">
@@ -23,8 +23,9 @@ export function HowItWorksSection() {
           <span className="num">STEP 02</span>
           <h3>Plan in phases.</h3>
           <p>
-            Group work into phases. Add tasks and note what depends on what.
-            RoadForge can surface recommended tasks without choosing your next action.
+            Group work into phases. Add tasks, subtasks, tags, and note what depends on what
+            so blocked work and phase progress update automatically while RoadForge can surface
+            recommended tasks without choosing your next action.
           </p>
         </div>
         <div className="step-card">
@@ -32,8 +33,9 @@ export function HowItWorksSection() {
           <span className="num">STEP 03</span>
           <h3>Share on your terms.</h3>
           <p>
-            Use the hosted demo for evaluation and light collaboration, or fork and
-            self-host RoadForge when your team needs an instance it controls.
+            Export portable JSON backups or Markdown anytime, or save to a server for shared links.
+            Use the hosted demo for evaluation and light collaboration, or fork and self-host
+            RoadForge when your team needs an instance it controls.
           </p>
         </div>
       </div>

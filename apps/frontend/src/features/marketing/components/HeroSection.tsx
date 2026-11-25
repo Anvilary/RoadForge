@@ -14,6 +14,11 @@ export function HeroSection({ onCreate }: HeroSectionProps) {
           A roadmap tool that{' '}
           <span className="accent">starts local, stays portable.</span>
         </h1>
+        <p className="hero-lede">
+          Plan engineering and product work in phases, tasks, and dependencies directly in your
+          browser without an account. Export canonical JSON or Markdown, connect coding agents via
+          MCP, or enable optional accountless collaboration for small teams.
+        </p>
         <div className="ctas">
           <button className="btn primary lg" onClick={onCreate}>
             Try the Hosted demo <Icon name="arrow-right" size={16} stroke="#fff" />

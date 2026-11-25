@@ -120,6 +120,12 @@
   box-shadow: 0 0 20px rgba(217, 116, 66, 0.08);
 }
 
+.help-accordion-heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 .help-accordion-trigger {
   width: 100%;
   display: flex;

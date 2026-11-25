@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createRoot } from 'react-dom/client'
 import { describe, expect, it } from 'vitest'
+import { HOME_TITLE } from '@/shared/lib/seo'
 import { SiteFooter } from '@/shared/ui/SiteFooter'
 
 describe('current product copy', () => {
@@ -31,7 +32,9 @@ describe('current product copy', () => {
       'utf8',
     )
 
-    expect(layout).toContain("title: 'RoadForge'")
+    expect(layout).toContain('default: HOME_TITLE')
+    expect(HOME_TITLE).toContain('RoadForge')
+    expect(HOME_TITLE).not.toMatch(/\balpha\b|work in progress|\bWIP\b/i)
     expect(layout).not.toMatch(/\balpha\b|work in progress|\bWIP\b/i)
     expect(workspace).toContain('`${title} · RoadForge`')
     expect(workspace).not.toMatch(/\balpha\b|work in progress|\bWIP\b/i)
