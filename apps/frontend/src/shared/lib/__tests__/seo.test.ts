@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { NextRequest } from 'next/server'
+import { HTML_LIMITED_BOT_UA_RE } from 'next/dist/shared/lib/router/utils/html-bots'
 import { describe, expect, it } from 'vitest'
+import nextConfig from '../../../../next.config'
 import { metadata as layoutMetadata } from '@/app/layout'
 import { metadata as homeMetadata } from '@/app/page'
 import { metadata as helpMetadata } from '@/app/help/page'
@@ -77,7 +79,7 @@ describe('SEO and AI discoverability metadata', () => {
     }
   })
 
-  it('emits valid robots.txt rules for standard and AI search crawlers without indexing private routes', () => {
+  it('allows crawlers to fetch application HTML to observe noindex while disallowing API endpoints', () => {
     const config = robots()
     const rules = Array.isArray(config.rules) ? config.rules : [config.rules]
     const agents = rules.map((r) => r.userAgent)
@@ -88,10 +90,52 @@ describe('SEO and AI discoverability metadata', () => {
     expect(agents).toContain('OAI-SearchBot')
 
     for (const rule of rules) {
-      expect(rule.allow).toEqual(['/', '/help'])
-      expect(rule.disallow).toEqual(['/workspace', '/shared', '/join', '/api/'])
+      expect(rule.allow).toBe('/')
+      expect(rule.disallow).toEqual(['/api/'])
     }
     expect(config.sitemap).toBe(`${SITE_URL}/sitemap.xml`)
+  })
+
+  it('extends Next.js default htmlLimitedBots with Googlebot and AI crawlers without disabling browser streaming', () => {
+    const matcher = nextConfig.htmlLimitedBots
+    expect(matcher).toBeInstanceOf(RegExp)
+
+    // Preserves Next.js framework default crawlers
+    for (const defaultBot of [
+      'AdsBot-Google',
+      'Google-InspectionTool',
+      'Bingbot',
+      'LinkedInBot',
+      'Twitterbot',
+      'Slackbot',
+      'facebookexternalhit',
+      'DuckDuckBot',
+      'Applebot',
+    ]) {
+      expect(HTML_LIMITED_BOT_UA_RE.test(defaultBot)).toBe(true)
+      expect(matcher!.test(defaultBot)).toBe(true)
+    }
+
+    // Adds Googlebot and AI search/preview crawlers
+    for (const addedBot of [
+      'Googlebot/2.1',
+      'OAI-SearchBot/1.0',
+      'ChatGPT-User',
+      'GPTBot',
+      'PerplexityBot',
+      'ClaudeBot',
+    ]) {
+      expect(matcher!.test(addedBot)).toBe(true)
+    }
+
+    // Ordinary browser requests still use streaming metadata
+    for (const browserUa of [
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
+    ]) {
+      expect(matcher!.test(browserUa)).toBe(false)
+    }
   })
 
   it('includes only legitimate indexable canonical pages in sitemap.xml', () => {
