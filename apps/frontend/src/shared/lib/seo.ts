@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const SITE_URL = 'https://roadforge.anvilary.tools'
 export const SITE_NAME = 'RoadForge'
-export const APP_VERSION = '0.2.0'
+export const APP_VERSION = '0.3.0'
 export const PUBLISHER_NAME = 'Anvilary Tools'
 export const PUBLISHER_URL = 'https://anvilary.tools/'
 export const REPO_URL = 'https://github.com/Anvilary/RoadForge'

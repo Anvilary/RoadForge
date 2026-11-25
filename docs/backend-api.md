@@ -72,6 +72,17 @@ dependency is unavailable.
 | `GET` | `/api/roadmaps/{id}` | owner/editor/viewer | read current roadmap |
 | `PUT` | `/api/roadmaps/{id}` | owner/editor | aggregate roadmap save |
 | `DELETE` | `/api/roadmaps/{id}` | owner | soft-delete roadmap |
+| `GET` | `/api/roadmaps/{id}/publication` | owner | read publication status and snippets |
+| `POST` | `/api/roadmaps/{id}/publication` | owner | publish, or republish with a new public id after unpublish |
+| `DELETE` | `/api/roadmaps/{id}/publication` | owner | unpublish and rotate the public id |
+| `GET` | `/api/public/roadmaps/{public_id}` | anonymous, published only | read the public projection |
+| `GET` | `/api/public/roadmaps/{public_id}/preview.png` | anonymous, published only | read the PNG preview |
+
+Unknown, unpublished, and deleted public ids return the same `404` body:
+`Published roadmap not found`. They do not reveal whether a private roadmap exists.
+The public projection is an allowlist. It does not reuse the authenticated roadmap
+response. Snippet URLs come from `ROADFORGE_WEB_BASE_URL`. See
+[Public roadmap publishing](public-roadmap-publishing.md).
 
 The canonical synced phase/task document remains PostgreSQL `roadmaps.snapshot_json`
 with the roadmap tag registry stored alongside it. Relational phase/task tables are

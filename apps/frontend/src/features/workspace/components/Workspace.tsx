@@ -630,6 +630,10 @@ export function Workspace({ mode = 'owner', onCreateOwn }: WorkspaceProps) {
         onCloseShare={closeShare}
         onCloseIO={closeIO}
         onConfirmSave={handleConfirmSave}
+        onEnableSharing={() => {
+          closeShare()
+          openSave()
+        }}
         onToast={showToast}
         onRoadmapImported={handleRoadmapImported}
       />

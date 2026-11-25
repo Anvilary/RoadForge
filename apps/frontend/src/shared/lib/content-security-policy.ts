@@ -5,6 +5,13 @@ interface ContentSecurityPolicyOptions {
   apiOrigin: string | null
   nonce: string
   upgradeInsecureRequests: boolean
+  frameAncestors?: string
+}
+
+const EMBED_PATH = /^\/embed\/pub_[A-Za-z0-9_-]{16,80}$/
+
+export function frameAncestorsForPath(pathname: string): "'none'" | '*' {
+  return EMBED_PATH.test(pathname) ? '*' : "'none'"
 }
 
 export interface ContentSecurityPolicyHeader {
@@ -40,6 +47,7 @@ export function buildContentSecurityPolicy({
   apiOrigin,
   nonce,
   upgradeInsecureRequests,
+  frameAncestors = "'none'",
 }: ContentSecurityPolicyOptions): string {
   const connectSrc = new Set<string>(["'self'"])
   if (apiOrigin) connectSrc.add(apiOrigin)
@@ -53,12 +61,11 @@ export function buildContentSecurityPolicy({
 
   const scriptSources = ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'"]
   if (!isProduction) scriptSources.push("'unsafe-eval'")
-
   const directives = [
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    "frame-ancestors 'none'",
+    `frame-ancestors ${frameAncestors}`,
     "form-action 'self'",
     `script-src ${scriptSources.join(' ')}`,
     // RoadForge currently uses React style attributes for dynamic colors,

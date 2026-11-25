@@ -10,6 +10,8 @@ import { metadata as helpMetadata } from '@/app/help/page'
 import { metadata as workspaceMetadata } from '@/app/workspace/page'
 import { metadata as sharedMetadata } from '@/app/shared/page'
 import { metadata as joinMetadata } from '@/app/join/page'
+import { metadata as publicViewerMetadata } from '@/app/p/[publicId]/page'
+import { metadata as embedViewerMetadata } from '@/app/embed/[publicId]/page'
 import robots from '@/app/robots'
 import sitemap from '@/app/sitemap'
 import { proxy } from '@/proxy'
@@ -56,8 +58,14 @@ describe('SEO and AI discoverability metadata', () => {
     expect(SOCIAL_PREVIEW_IMAGE.alt).toContain('RoadForge')
   })
 
-  it('marks /workspace, /shared, and /join as noindex/nofollow in both Next metadata and proxy headers', () => {
-    for (const routeMeta of [workspaceMetadata, sharedMetadata, joinMetadata]) {
+  it('marks /workspace, /shared, /join, /p/*, and /embed/* as noindex/nofollow in metadata and proxy headers while framing only /embed/pub_*', () => {
+    for (const routeMeta of [
+      workspaceMetadata,
+      sharedMetadata,
+      joinMetadata,
+      publicViewerMetadata,
+      embedViewerMetadata,
+    ]) {
       expect(routeMeta.alternates).toBeUndefined()
       expect(routeMeta.robots).toMatchObject({
         index: false,
@@ -65,17 +73,36 @@ describe('SEO and AI discoverability metadata', () => {
       })
     }
 
-    for (const path of ['/workspace', '/workspace?roadmap=local_1', '/shared', '/join']) {
+    for (const path of [
+      '/workspace',
+      '/workspace?roadmap=local_1',
+      '/shared',
+      '/join',
+      '/p/pub_abcdefghijklmnopqrstuv',
+      '/embed/not-a-public-id',
+    ]) {
       const request = new NextRequest(new URL(`${SITE_URL}${path}`))
       const response = proxy(request)
       expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow')
       expect(response.headers.get('Cache-Control')).toBe('private, no-store')
+      expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+      expect(response.headers.get('Content-Security-Policy-Report-Only') ?? response.headers.get('Content-Security-Policy'))
+        .toContain("frame-ancestors 'none'")
     }
+
+    const embedReq = new NextRequest(new URL(`${SITE_URL}/embed/pub_abcdefghijklmnopqrstuv`))
+    const embedRes = proxy(embedReq)
+    expect(embedRes.headers.get('X-Robots-Tag')).toBe('noindex, nofollow')
+    expect(embedRes.headers.get('Cache-Control')).toBe('private, no-store')
+    expect(embedRes.headers.get('X-Frame-Options')).toBeNull()
+    expect(embedRes.headers.get('Content-Security-Policy-Report-Only') ?? embedRes.headers.get('Content-Security-Policy'))
+      .toContain('frame-ancestors *')
 
     for (const publicPath of ['/', '/help']) {
       const request = new NextRequest(new URL(`${SITE_URL}${publicPath}`))
       const response = proxy(request)
       expect(response.headers.get('X-Robots-Tag')).toBeNull()
+      expect(response.headers.get('X-Frame-Options')).toBe('DENY')
     }
   })
 

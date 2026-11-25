@@ -119,8 +119,15 @@
 
 /* ─── Generic modal base ───────────────────────────────────────────────────── */
 .modal {
-  width: 540px; max-width: 100%;
-  max-height: calc(100vh - 48px); overflow: auto;
+  width: 540px;
+  /* Keep calc() on its own. Nested inside min(), the CSS compiler drops it. */
+  max-width: calc(100vw - 24px);
+  min-width: 0;
+  box-sizing: border-box;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: radial-gradient(420px 160px at 82% 0%, var(--forge-glow-1), transparent 66%), var(--surface-overlay);
   border: 1px solid var(--border-strong);
   border-top-color: var(--accent-border-strong);
@@ -185,6 +192,9 @@
 .modal-body {
   padding: 18px 22px 8px;
   display: flex; flex-direction: column; gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
 /* ─── Modal foot ───────────────────────────────────────────────────────────── */
@@ -193,6 +203,7 @@
   padding: 14px 22px 18px;
   border-top: 1px solid var(--border-faint);
   margin-top: 6px;
+  flex: 0 0 auto;
 }
 .modal-foot .spacer { flex: 1; }
 .modal-foot .back {
@@ -203,7 +214,9 @@
 }
 .modal-foot .back:hover { color: var(--ink); border-color: var(--border); }
 .modal-foot .note {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: flex; align-items: flex-start; gap: 6px;
+  min-width: 0;
+  flex: 1 1 180px;
   font-size: 12px; color: var(--ink-3);
 }
 

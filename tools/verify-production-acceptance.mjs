@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 const BASE_URL = 'https://roadforge.anvilary.tools'
 
 async function runAcceptance() {
-  console.log(`Starting RoadForge v0.2.0 production reconciliation tests on ${BASE_URL}...`)
+  console.log(`Starting RoadForge v0.3.0 production reconciliation tests on ${BASE_URL}...`)
 
   // 1. API Readiness & Health
   console.log('1. Validating API health and readiness endpoints...')
@@ -14,7 +14,7 @@ async function runAcceptance() {
     assert.equal(res.status, 200, `${ep} must return HTTP 200`)
     const json = await res.json()
     assert.equal(json.status, 'ok', `${ep} status must be ok`)
-    assert.equal(json.version, '0.2.0', `${ep} version must be 0.2.0`)
+    assert.equal(json.version, '0.3.0', `${ep} version must be 0.3.0`)
     console.log(`   ${ep}: status=${json.status}, version=${json.version}`)
   }
 

@@ -65,6 +65,33 @@ worker-src 'self' blob:;
 
 `upgrade-insecure-requests` is added for the externally observed HTTPS deployment.
 
+### Public embed framing exception
+
+Authenticated application pages keep `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+
+Only a document path matching `/embed/pub_` plus an opaque public id may be framed.
+That route uses `frame-ancestors *`, omits `X-Frame-Options`, and includes
+`X-Robots-Tag: noindex, nofollow`. The Next.js document proxy owns that choice.
+`next.config.ts` sets `X-Frame-Options: DENY` only on non-embed paths (`/((?!embed/).*)`)
+instead of a global `/:path*` rule so embed routes can render inside third-party iframes
+while static/non-embed routes keep frame denial.
+
+The `/p/{public_id}` standalone public viewer keeps `frame-ancestors 'none'`,
+`X-Frame-Options: DENY`, and `X-Robots-Tag: noindex, nofollow`.
+
+The reference nginx config repeats `nosniff`, `Referrer-Policy`, and
+`Permissions-Policy` on `location /embed/` and omits `X-Frame-Options` there. A
+location that sets any `add_header` does not inherit the server-level DENY line.
+Every other location keeps the server-level DENY header.
+
+A Cloudflare or other edge zone setting `X-Frame-Options: DENY` on all paths will
+block website embeds. Exclude `/embed/` at the edge. Do not relax framing for
+`/workspace`, `/p/`, or `/api/roadmaps`.
+
+The embedded page does not accept invite tokens, session cookies, or publication
+changes. Public JSON and PNG responses are not documents and do not need to be
+frameable.
+
 ### Inline-style residual boundary
 
 RoadForge still uses React style attributes for dynamic colors, geometry, and interaction
@@ -116,7 +143,7 @@ New invite credentials use URL fragments and are not sent in HTTP request target
 legacy query-token links may still exist until rotated. Treat every copied join URL as
 sensitive regardless of transport form.
 
-RoadForge has no server-side CSP report collector in `0.2.0`; this avoids creating another
+RoadForge has no server-side CSP report collector in `0.3.0`; this avoids creating another
 retention/logging surface for potentially sensitive browser reports.
 
 ## Development policy

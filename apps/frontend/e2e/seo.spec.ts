@@ -75,16 +75,40 @@ test.describe('SEO, metadata, structured data, and crawler directives', () => {
     expect(webPage.url).toBe('https://roadforge.anvilary.tools/help')
   })
 
-  test('ordinary browser visits to /workspace, /shared, and /join expose noindex in both headers and hydrated DOM', async ({ page }) => {
-    for (const route of ['/workspace', '/shared', '/join']) {
+  test('ordinary browser visits to /workspace, /shared, /join, /p/*, and /embed/* expose noindex and enforce route-specific framing policies', async ({ page }) => {
+    for (const route of [
+      '/workspace',
+      '/shared',
+      '/join',
+      '/p/pub_abcdefghijklmnopqrstuv',
+      '/embed/invalid-public-id',
+    ]) {
       const response = await page.goto(route)
       expect(response?.status()).toBe(200)
       expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow')
+      expect(response?.headers()['x-frame-options']).toBe('DENY')
+      const policy =
+        response?.headers()['content-security-policy'] ??
+        response?.headers()['content-security-policy-report-only']
+      expect(policy).toContain("frame-ancestors 'none'")
 
       const robotsMeta = await page.locator('meta[name="robots"]').getAttribute('content')
       expect(robotsMeta).toBe('noindex, nofollow')
       await expect(page.locator('link[rel="canonical"]')).toHaveCount(0)
     }
+
+    const embedResponse = await page.goto('/embed/pub_abcdefghijklmnopqrstuv')
+    expect(embedResponse?.status()).toBe(200)
+    expect(embedResponse?.headers()['x-robots-tag']).toBe('noindex, nofollow')
+    expect(embedResponse?.headers()['x-frame-options']).toBeUndefined()
+    const embedPolicy =
+      embedResponse?.headers()['content-security-policy'] ??
+      embedResponse?.headers()['content-security-policy-report-only']
+    expect(embedPolicy).toContain('frame-ancestors *')
+    await expect(page).toHaveTitle('Embedded Roadmap | RoadForge')
+    const embedRobotsMeta = await page.locator('meta[name="robots"]').getAttribute('content')
+    expect(embedRobotsMeta).toBe('noindex, nofollow')
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0)
   })
 
   test('robots.txt allows crawling application HTML to observe noindex while restricting API endpoints, and sitemap.xml lists only indexable pages', async ({ request }) => {
@@ -143,7 +167,13 @@ test.describe('SEO, metadata, structured data, and crawler directives', () => {
       expect(helpHead).toContain('property="og:url" content="https://roadforge.anvilary.tools/help"')
       expect(helpHtml).toContain('application/ld+json')
 
-      for (const noindexRoute of ['/workspace', '/shared', '/join']) {
+      for (const noindexRoute of [
+        '/workspace',
+        '/shared',
+        '/join',
+        '/p/pub_abcdefghijklmnopqrstuv',
+        '/embed/pub_abcdefghijklmnopqrstuv',
+      ]) {
         const res = await request.get(noindexRoute, { headers: { 'User-Agent': userAgent } })
         expect(res.status()).toBe(200)
         expect(res.headers()['x-robots-tag']).toBe('noindex, nofollow')

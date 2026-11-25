@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildContentSecurityPolicy,
   contentSecurityPolicyHeader,
+  frameAncestorsForPath,
   resolveApiOrigin,
   resolveContentSecurityPolicyMode,
 } from '@/shared/lib/content-security-policy'
@@ -29,6 +30,24 @@ describe('content security policy', () => {
     expect(header.value).not.toMatch(/script-src[^;]*'unsafe-eval'/)
     expect(header.value).toContain("connect-src 'self' https://roadforge.example")
     expect(header.value).toContain('upgrade-insecure-requests')
+    expect(header.value).toContain("frame-ancestors 'none'")
+  })
+
+  it('allows framing only for a public embed path', () => {
+    expect(frameAncestorsForPath('/embed/pub_abcdefghijklmnopqrstuv')).toBe('*')
+    expect(frameAncestorsForPath('/workspace')).toBe("'none'")
+    expect(frameAncestorsForPath('/embed')).toBe("'none'")
+    expect(frameAncestorsForPath('/embedded/pub_abcdefghijklmnopqrstuv')).toBe("'none'")
+
+    const embed = buildContentSecurityPolicy({
+      isProduction: true,
+      apiOrigin: 'https://roadforge.example',
+      nonce: 'embed-nonce',
+      upgradeInsecureRequests: true,
+      frameAncestors: '*',
+    })
+    expect(embed).toContain('frame-ancestors *')
+    expect(embed).not.toContain("frame-ancestors 'none'")
   })
 
   it('supports an explicit production report-only observation/rollback mode', () => {

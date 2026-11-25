@@ -12,7 +12,7 @@ from api.middleware.body_limit import add_body_limit
 from api.middleware.browser_session import add_browser_session_auth
 from api.middleware.cors import add_cors
 from api.middleware.security_headers import add_security_headers
-from api.routers import roadmaps
+from api.routers import public_roadmaps, roadmaps
 from api.shared.auth import browser_session_router as browser_sessions
 from api.shared.health import router as health
 from api.shared.realtime.event_bus import event_bus
@@ -55,6 +55,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/api")
     app.include_router(browser_sessions.router, prefix="/api/roadmaps")
     app.include_router(roadmaps.router, prefix="/api/roadmaps")
+    app.include_router(public_roadmaps.router, prefix="/api/public")
     return app
 
 

@@ -14,6 +14,7 @@ interface WorkspaceModalsProps {
   onCloseShare: () => void
   onCloseIO: () => void
   onConfirmSave: (password?: string) => void
+  onEnableSharing?: () => void
   onToast: (msg: string) => void
   onRoadmapImported?: (
     roadmapName: string | undefined,
@@ -30,6 +31,7 @@ export function WorkspaceModals({
   onCloseShare,
   onCloseIO,
   onConfirmSave,
+  onEnableSharing,
   onToast,
   onRoadmapImported,
 }: WorkspaceModalsProps) {
@@ -40,7 +42,12 @@ export function WorkspaceModals({
         onClose={onCloseSave}
         onConfirm={onConfirmSave}
       />
-      <ShareModal open={showShare} onClose={onCloseShare} onToast={onToast} />
+      <ShareModal
+        open={showShare}
+        onClose={onCloseShare}
+        onToast={onToast}
+        onEnableSharing={onEnableSharing}
+      />
       <IOModal open={showIO} onClose={onCloseIO} onToast={onToast} onRoadmapImported={onRoadmapImported} />
     </>
   )

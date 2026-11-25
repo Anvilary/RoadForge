@@ -5,6 +5,19 @@ Dates use ISO format.
 
 ## Unreleased
 
+## 0.3.0 - 2026-11-25
+
+### Public roadmap publishing and embedding
+
+- Add explicit, owner-controlled public publishing for server-backed roadmaps backed by Alembic migration `0012_add_roadmap_publications` (`roadmap_publications` table with unique opaque `pub_` identifiers and unpublish/deletion rotation).
+- Keep private collaboration credentials strictly separate from public links: editors, viewers, anonymous visitors, and revoked or expired sessions cannot change publication state, and viewer invites remain private collaboration credentials.
+- Serve an explicit allowlist-projected read-only API at `GET /api/public/roadmaps/{public_id}` (`Cache-Control: public, max-age=15`, `ETag`, `X-Robots-Tag: noindex, nofollow`) and deterministic in-process Pillow PNG previews (`1200x630`) at `GET /api/public/roadmaps/{public_id}/preview.png` (`Cache-Control: public, max-age=60`, `ETag`, `X-Robots-Tag: noindex, nofollow`).
+- Exclude private descriptions, time estimates, assignees, task claims, external GitHub links, participants, owner name, invite credentials, session tokens, password material, activity/version history, and internal roadmap IDs from all public responses and PNG previews.
+- Add standalone public viewer routes at `/p/[publicId]` and embeddable viewer routes at `/embed/[publicId]` polling anonymously (`credentials: 'omit'`) with accessible expand/collapse and attribution (`Built with RoadForge by Anvilary.Tools`).
+- Enforce route-scoped framing controls: `/embed/pub_<id>` allows cross-origin embedding via `frame-ancestors *` and omits `X-Frame-Options` in Next.js proxy and reference nginx config, while `/`, `/help`, `/workspace`, `/shared`, `/join`, and `/p/[publicId]` preserve `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+- Extend SEO and indexing directives across `/p/[publicId]` and `/embed/[publicId]` with `noindex, nofollow` metadata, `X-Robots-Tag: noindex, nofollow` headers, zero homepage canonical inheritance, sitemap exclusion, and structured-data `softwareVersion` updated to `0.3.0`.
+- Add Publish roadmap controls inside Share (collapsed by default) with copyable public viewer URL, clickable GitHub Markdown PNG snippet, website iframe embed snippet, explicit local-only save guidance, and unpublish/republish confirmation and rotation warnings.
+
 ## 0.2.0 - 2026-11-20
 
 ### Styling infrastructure and dependencies

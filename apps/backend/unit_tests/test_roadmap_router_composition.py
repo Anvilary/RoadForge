@@ -1,17 +1,18 @@
 from fastapi.routing import APIRoute
 
-from api.features.history import activity_router as roadmap_activity
 from api.features.agent_client import router as roadmap_client
-from api.features.roadmaps import router as roadmap_core
-from api.features.roadmaps import focused_router as roadmap_focused
 from api.features.collaboration import router as roadmap_locks
-from api.features.realtime import router as roadmap_realtime
-from api.features.sharing import router as roadmap_sharing
-from api.features.phases import router as roadmap_structure
-from api.features.tags import router as roadmap_tags
-from api.features.tasks import structure_router as roadmap_task_structure
-from api.features.tasks import router as roadmap_tasks
+from api.features.history import activity_router as roadmap_activity
 from api.features.history import versions_router as roadmap_versions
+from api.features.phases import router as roadmap_structure
+from api.features.publication import router as roadmap_publication
+from api.features.realtime import router as roadmap_realtime
+from api.features.roadmaps import focused_router as roadmap_focused
+from api.features.roadmaps import router as roadmap_core
+from api.features.sharing import router as roadmap_sharing
+from api.features.tags import router as roadmap_tags
+from api.features.tasks import router as roadmap_tasks
+from api.features.tasks import structure_router as roadmap_task_structure
 from api.routers import roadmaps
 
 _CORE_ROUTES = {
@@ -85,6 +86,11 @@ _REALTIME_ROUTES = {
     ("POST", "/{roadmap_id}/events/ticket"),
     ("GET", "/{roadmap_id}/events"),
 }
+_PUBLICATION_ROUTES = {
+    ("GET", "/{roadmap_id}/publication"),
+    ("POST", "/{roadmap_id}/publication"),
+    ("DELETE", "/{roadmap_id}/publication"),
+}
 _TAG_ROUTES = {
     ("GET", "/{roadmap_id}/tags"),
     ("POST", "/{roadmap_id}/tags"),
@@ -104,6 +110,7 @@ _DOMAIN_CONTRACTS = (
     (roadmap_task_structure.router, _TASK_STRUCTURE_ROUTES),
     (roadmap_locks.router, _LOCK_ROUTES),
     (roadmap_sharing.router, _SHARING_ROUTES),
+    (roadmap_publication.router, _PUBLICATION_ROUTES),
     (roadmap_sharing.join_router, {("POST", "/join")}),
     (roadmap_realtime.router, _REALTIME_ROUTES),
     (roadmap_tags.router, _TAG_ROUTES),
@@ -122,7 +129,7 @@ def _route_keys(router) -> list[tuple[str, str]]:
 
 def test_composed_router_matches_public_method_path_contract() -> None:
     assert set(_route_keys(roadmaps.router)) == _EXPECTED_PUBLIC_ROUTES
-    assert len(_EXPECTED_PUBLIC_ROUTES) == 57
+    assert len(_EXPECTED_PUBLIC_ROUTES) == 60
 
 
 def test_composed_router_has_no_duplicate_method_path_routes() -> None:

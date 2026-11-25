@@ -1,6 +1,6 @@
 # RoadForge access model
 
-RoadForge `0.2.0` is accountless. There are no user accounts, global profiles, login
+RoadForge `0.3.0` is accountless. There are no user accounts, global profiles, login
 flow, password reset flow, email identity records, or account dashboard.
 
 Access to a synced roadmap is roadmap-scoped and uses invite links, optional roadmap
@@ -36,6 +36,7 @@ and should be rotated after the hardened release is deployed.
 
 A viewer invite grants read-only collaboration access. It is an access credential, not a
 public publishing URL, and its raw token is reveal-once exactly like owner/editor invites.
+Creating or rotating a viewer invite never publishes the roadmap.
 While the share-link record remains active, the issued credential can continue authorizing
 future joins, but ordinary share-link listing cannot reconstruct the raw URL. Migration
 `0011` revokes legacy viewer links whose raw token had been persisted and drops the old
@@ -44,6 +45,23 @@ new copyable viewer invite is required.
 
 Invite rotation/revocation controls **future joins**. It does not automatically revoke
 participant sessions that already joined through an older link.
+
+## Public publication
+
+Public publishing is a separate owner opt-in for a server-backed roadmap introduced in
+RoadForge `0.3.0`. Hosted deployments only serve this behavior after deploying the `0.3.0`
+release and database migration `0012_add_roadmap_publications`.
+
+An owner publishes from Share. The server stores one publication row and issues an opaque
+`pub_` identifier. That identifier is a public reference, not an invite token, session
+token, or password. Anonymous visitors can read only the published field allowlist.
+Editors and viewers cannot change publication state. A browser-only roadmap has no public
+address; saving to the server and publishing are separate confirmations.
+
+Unpublishing rotates the public identifier. New requests stop returning roadmap data.
+Copies already cached by a browser, GitHub, or another site cannot be recalled.
+Republishing creates a new public link. The full contract is
+[Public roadmap publishing](public-roadmap-publishing.md).
 
 ## Participant sessions
 
@@ -158,7 +176,7 @@ these rules:
 - require Redis-backed coordination for multi-process realtime deployments;
 - treat user-authored imports, labels, descriptions, and links as untrusted input.
 
-## Deliberately absent from `0.2.0`
+## Deliberately absent from `0.3.0`
 
 RoadForge does not currently provide accounts, OAuth/OIDC, email recovery, service accounts,
 generic public API keys, billing, or automatic GitHub-to-roadmap mutation. These are not

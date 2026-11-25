@@ -8,7 +8,7 @@ API_ROOT = Path(__file__).resolve().parents[1] / "src" / "api"
 FOUNDATION = {"config", "database", "models", "shared"}
 DOMAIN = {
     "roadmaps", "tags", "tasks", "phases", "history", "sharing",
-    "collaboration", "realtime", "retention", "agent_client",
+    "collaboration", "realtime", "retention", "agent_client", "publication",
 }
 ALLOWED = {
     "api": set(),
@@ -26,6 +26,7 @@ ALLOWED = {
     "tags": FOUNDATION | {"roadmaps"},
     "history": FOUNDATION | {"roadmaps"},
     "phases": FOUNDATION | {"roadmaps", "tasks"},
+    "publication": FOUNDATION | {"roadmaps"},
     "retention": FOUNDATION | {"tasks"},
     "agent_client": FOUNDATION | {"phases", "tasks", "tags", "roadmaps"},
     "routers": DOMAIN,

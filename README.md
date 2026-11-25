@@ -6,7 +6,7 @@ RoadForge by Anvilary is a local-first roadmap tool for individuals and small te
 Create phases, tasks, dependencies, tags, and portable backups without an account.
 Enable server sync only when you deliberately want sharing and realtime collaboration.
 
-**Release target:** `0.2.0`
+**Release target:** `0.3.0`
 
 > [!IMPORTANT]
 > The hosted RoadForge instance at `roadforge.anvilary.tools` is the **official demo/reference
@@ -101,6 +101,12 @@ RoadForge has no login system or verified personal identities.
 Owner/editor/viewer invite links and participant sessions are bearer credentials. Share them
 privately. Viewer invites grant read-only collaboration access; they are not public publishing
 links. Display names are collaboration labels, not verified identities.
+
+Public publishing is a separate owner opt-in for a server-backed roadmap introduced for
+`0.3.0`. It is documented in [Public roadmap publishing](docs/public-roadmap-publishing.md).
+It is never enabled by a viewer invite, and browser-local roadmaps remain private until
+explicitly synced and published. The hosted demo at `roadforge.anvilary.tools` only serves
+revisions explicitly deployed there.
 
 Task assignees and server participants are separate concepts: an assignee is roadmap
 data; a participant is a joined server session.
@@ -282,4 +288,4 @@ See:
 - [Self-hosting](docs/self-hosting.md)
 - [Support](SUPPORT.md)
 
-RoadForge `0.1.0` established the initial architecture baseline, and `0.2.0` introduces the modernized Tailwind CSS 4 styling pipeline while preserving these core data-ownership and collaboration principles.
+RoadForge `0.1.0` established the initial architecture baseline, `0.2.0` introduced the modernized Tailwind CSS 4 styling pipeline and SEO/discoverability hardening, and `0.3.0` adds owner-controlled public roadmap viewing, GitHub README PNG previews, and website iframe embedding while preserving these core data-ownership and collaboration principles.

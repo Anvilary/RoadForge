@@ -126,6 +126,12 @@ export const SECTIONS: SectionData[] = [
           once. A task claim communicates who is working on a task; it does
           not assign permanent ownership.
         </p>
+        <p>
+          Public publishing is a separate owner action in Share, after the
+          roadmap is saved on the server. A browser-only roadmap has no public
+          address that updates on its own. Enable sharing does not publish it.
+          The public page is read-only and shows only the published fields.
+        </p>
       </>
     ),
   },

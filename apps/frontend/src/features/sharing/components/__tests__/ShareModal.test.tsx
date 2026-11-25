@@ -9,6 +9,7 @@ import { ApiError } from '@/shared/http/roadmap-http'
 const roadmapDataMock = vi.hoisted(() => ({
   isPasswordEnabled: false,
   setIsPasswordEnabled: vi.fn(),
+  saved: true as boolean | undefined,
 }))
 
 const roadmapSessionMock = vi.hoisted(() => ({
@@ -33,6 +34,12 @@ vi.mock('@/features/sharing/services/sharing.service', () => ({
   updateRoadmapPassword: updateRoadmapPasswordMock,
 }))
 
+vi.mock('@/features/publication/services/publication.service', () => ({
+  getPublication: vi.fn(() => new Promise(() => {})),
+  publishRoadmap: vi.fn(),
+  unpublishRoadmap: vi.fn(),
+}))
+
 describe('ShareModal local fallback', () => {
   let container: HTMLDivElement
   let root: Root
@@ -42,6 +49,7 @@ describe('ShareModal local fallback', () => {
     roadmapSessionMock.sessionToken = null
     roadmapSessionMock.role = 'owner'
     roadmapDataMock.isPasswordEnabled = false
+    roadmapDataMock.saved = true
     roadmapDataMock.setIsPasswordEnabled.mockClear()
     updateRoadmapPasswordMock.mockClear()
 
@@ -59,6 +67,29 @@ describe('ShareModal local fallback', () => {
     act(() => root.unmount())
     container.remove()
     vi.unstubAllGlobals()
+  })
+
+  it('explains that a browser-only roadmap cannot publish a live public view', () => {
+    const onEnableSharing = vi.fn()
+    act(() => {
+      root.render(
+        <ShareModal open={true} onClose={vi.fn()} onToast={vi.fn()} onEnableSharing={onEnableSharing} />,
+      )
+    })
+
+    const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const publish = dialog.querySelector('[data-testid="public-publish-toggle"]') as HTMLButtonElement
+    expect(publish.getAttribute('aria-expanded')).toBe('false')
+    expect(dialog.querySelector('textarea')).toBeNull()
+    act(() => publish.click())
+    expect(dialog.textContent).toContain('no public address')
+    expect(dialog.textContent).toContain('will not upload')
+    const enable = Array.from(dialog.querySelectorAll('button')).find((button) => (
+      button.textContent === 'Enable sharing'
+    ))
+    expect(enable).toBeDefined()
+    act(() => enable?.click())
+    expect(onEnableSharing).toHaveBeenCalledOnce()
   })
 
   it('never exposes fake or copyable credential links without a server roadmap', () => {
@@ -95,6 +126,7 @@ describe('ShareModal owner password management', () => {
     roadmapSessionMock.sessionToken = 'token-owner-456'
     roadmapSessionMock.role = 'owner'
     roadmapDataMock.isPasswordEnabled = false
+    roadmapDataMock.saved = true
     roadmapDataMock.setIsPasswordEnabled.mockClear()
     updateRoadmapPasswordMock.mockClear()
 
@@ -278,16 +310,17 @@ describe('ShareModal owner password management', () => {
     expect(onToast).toHaveBeenCalledWith('Only the owner can manage the roadmap password.')
   })
 
-  it('starts with all 4 progressive disclosure sections collapsed and resets on reopen', () => {
+  it('starts with all 5 progressive disclosure sections collapsed and resets on reopen', () => {
     act(() => {
       root.render(<ShareModal open={true} onClose={vi.fn()} onToast={vi.fn()} />)
     })
 
     const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
     const sectionHeads = Array.from(dialog.querySelectorAll('.share-role-head'))
-    expect(sectionHeads.length).toBe(4)
+    expect(sectionHeads.length).toBe(5)
+    expect(dialog.textContent).toContain('Publish roadmap')
 
-    // Verify all 4 sections start collapsed
+    // Verify all 5 sections start collapsed
     for (const head of sectionHeads) {
       expect(head.getAttribute('aria-expanded')).toBe('false')
     }
@@ -308,11 +341,49 @@ describe('ShareModal owner password management', () => {
 
     const reopenedDialog = document.body.querySelector('[role="dialog"]') as HTMLElement
     const reopenedHeads = Array.from(reopenedDialog.querySelectorAll('.share-role-head'))
-    expect(reopenedHeads.length).toBe(4)
+    expect(reopenedHeads.length).toBe(5)
 
     // All sections are collapsed again
     for (const head of reopenedHeads) {
       expect(head.getAttribute('aria-expanded')).toBe('false')
     }
+  })
+})
+
+describe('ShareModal viewer publication access', () => {
+  let container: HTMLDivElement
+  let root: Root
+
+  beforeEach(() => {
+    roadmapSessionMock.serverRoadmapId = 'road-test-123'
+    roadmapSessionMock.sessionToken = 'token-viewer'
+    roadmapSessionMock.role = 'viewer'
+    roadmapDataMock.saved = true
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+  })
+
+  afterEach(() => {
+    act(() => root.unmount())
+    container.remove()
+    vi.unstubAllGlobals()
+  })
+
+  it('tells a viewer that only the owner can publish', () => {
+    act(() => {
+      root.render(<ShareModal open={true} onClose={vi.fn()} onToast={vi.fn()} />)
+    })
+    const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const publish = dialog.querySelector('[data-testid="public-publish-toggle"]') as HTMLButtonElement
+    act(() => publish.click())
+    expect(dialog.textContent).toContain('Only the roadmap owner can publish or unpublish this roadmap.')
+    expect(dialog.querySelector('[data-testid="publish-roadmap"]')).toBeNull()
+    expect(dialog.querySelector('textarea')).toBeNull()
   })
 })

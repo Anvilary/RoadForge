@@ -93,6 +93,16 @@ export function SaveToServerModal({ open, onClose, onConfirm }: SaveToServerModa
           <b>Local fallback:</b> Failed or conflicting saves do not remove the browser copy.
         </span>
       </div>
+      <div className="bullet">
+        <span className="dot">
+          <Icon name="share" size={13} />
+        </span>
+        <span className="text">
+          <b>Public publishing is separate:</b> A roadmap stored only in this browser
+          has no public address that updates on its own. Saving does not publish it.
+          After this server copy exists, open Share and choose Publish roadmap.
+        </span>
+      </div>
 
       <form
         className="password-section"

@@ -7,6 +7,7 @@ from api.features.collaboration import router as roadmap_locks
 from api.features.history import activity_router as roadmap_activity
 from api.features.history import versions_router as roadmap_versions
 from api.features.phases import router as roadmap_structure
+from api.features.publication import router as roadmap_publication
 from api.features.realtime import router as roadmap_realtime
 from api.features.roadmaps import focused_router as roadmap_focused
 from api.features.roadmaps import router as roadmap_core
@@ -26,6 +27,7 @@ _DOMAIN_ROUTERS = (
     roadmap_task_structure.router,
     roadmap_locks.router,
     roadmap_sharing.router,
+    roadmap_publication.router,
     roadmap_realtime.router,
     roadmap_tags.router,
 )

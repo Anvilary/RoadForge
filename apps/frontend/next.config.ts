@@ -23,10 +23,31 @@ const HTML_LIMITED_BOTS = new RegExp(
   'i',
 )
 
+function devApiProxyRewrites(): { source: string; destination: string }[] {
+  // Local stand-in for the nginx `/api/` proxy. Production does not set this.
+  // The value must be an origin so the rewrite cannot become an open proxy.
+  const raw = process.env.ROADFORGE_DEV_API_PROXY?.trim()
+  if (!raw) return []
+  let origin: URL
+  try {
+    origin = new URL(raw)
+  } catch {
+    return []
+  }
+  if (origin.protocol !== 'http:' && origin.protocol !== 'https:') return []
+  if (origin.username || origin.password || origin.search || origin.hash || origin.pathname !== '/') {
+    return []
+  }
+  return [{ source: '/api/:path*', destination: `${origin.origin}/api/:path*` }]
+}
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../..'),
   htmlLimitedBots: HTML_LIMITED_BOTS,
+  async rewrites() {
+    return devApiProxyRewrites()
+  },
   async headers() {
     return [
       {
@@ -37,10 +58,6 @@ const nextConfig: NextConfig = {
             value: 'nosniff',
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
             key: 'Referrer-Policy',
             value: 'no-referrer',
           },
@@ -48,6 +65,15 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value:
               'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()',
+          },
+        ],
+      },
+      {
+        source: '/((?!embed/).*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
           },
         ],
       },

@@ -47,6 +47,7 @@ or team-scale SLA.
 | Understand canonical data ownership | [`architecture/source-of-truth-rules.md`](architecture/source-of-truth-rules.md) |
 | Understand task complexity and decomposition | [`task-complexity.md`](task-complexity.md) |
 | Understand shared access | [`access-model.md`](access-model.md) |
+| Publish a public roadmap | [`public-roadmap-publishing.md`](public-roadmap-publishing.md) |
 | Understand the browser application | [`frontend-foundation.md`](frontend-foundation.md) |
 | Understand API semantics | [`backend-api.md`](backend-api.md) |
 | Review merge/release readiness | [`release-readiness.md`](release-readiness.md) |
@@ -65,6 +66,7 @@ their contract changes:
 
 - `hosted-demo-and-self-hosting.md`
 - `access-model.md`
+- `public-roadmap-publishing.md`
 - `backend-api.md`
 - `frontend-foundation.md`
 - `release-readiness.md`

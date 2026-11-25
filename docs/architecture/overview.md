@@ -14,7 +14,7 @@ browser cache as an optimistic copy and recovery aid.
 `apps/frontend/src/app` composes routes using `features/workspace`, `features/marketing`,
 and the invite join feature. The synchronization feature owns the active roadmap
 provider, hydration, save decisions, and SSE reconciliation. Tags, roadmaps,
-sharing, history, collaboration, tasks, phases, and data transfer own their specific
+sharing, publication, history, collaboration, tasks, phases, and data transfer own their specific
 operations. Their shared HTTP transport, browser storage, context slices, value
 helpers, reorder coordination, and UI primitives live under `src/shared`.
 
@@ -70,8 +70,16 @@ new-local, or safe-additions operations. Safe merge never silently overwrites ma
 tasks or tag definitions. Version history, activity, conflict metadata, and browser
 cache provide recovery layers, but users should still export backups.
 
+## Public publication
+
+An owner can publish a server-backed roadmap. Anonymous readers receive an allowlisted
+projection at `/p/{public_id}` and `/embed/{public_id}`. The preview image is rendered
+in-process. Publication identifiers are not invite credentials. The contract is
+[Public roadmap publishing](../public-roadmap-publishing.md). This is not a claim that
+the hosted demo already serves published roadmaps.
+
 ## Future platform scope
 
-Accounts, OAuth, workspaces, public slugs, telemetry, billing, and assistant tools are
+Accounts, OAuth, workspaces, vanity public slugs, telemetry, billing, and assistant tools are
 future platform work. They are intentionally absent from the current accountless
-security boundary.
+security boundary. Public publication uses an opaque id, not a chosen slug.
