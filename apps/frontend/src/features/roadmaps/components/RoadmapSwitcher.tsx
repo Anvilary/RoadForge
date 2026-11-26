@@ -22,6 +22,7 @@ interface RoadmapSwitcherProps {
   variant?: 'header' | 'compact' | 'workspace'
   hideWhenEmpty?: boolean
   label?: string
+  showLabel?: boolean
   onCreate?: () => void
 }
 
@@ -29,6 +30,7 @@ export function RoadmapSwitcher({
   variant = 'workspace',
   hideWhenEmpty = false,
   label = 'Roadmaps and session',
+  showLabel = false,
   onCreate,
 }: RoadmapSwitcherProps) {
   const router = useRouter()
@@ -190,7 +192,14 @@ export function RoadmapSwitcher({
     <div className={`roadmap-switcher ${variant}`}>
       <button
         ref={anchorRef}
-        className={isWorkspaceVariant ? 'roadmap-menu-trigger' : 'iconbtn'}
+        type="button"
+        className={
+          isWorkspaceVariant
+            ? 'roadmap-menu-trigger'
+            : showLabel
+              ? 'site-nav-action-btn'
+              : 'iconbtn'
+        }
         title={label}
         onClick={() => {
           if (isOpen) closeSwitcher()
@@ -205,6 +214,11 @@ export function RoadmapSwitcher({
           <>
             <Icon name="user" size={16} />
             <Icon name="chevron-down" size={12} />
+          </>
+        ) : showLabel ? (
+          <>
+            <Icon name="device" size={16} />
+            <span>{label}</span>
           </>
         ) : (
           <Icon name="device" size={16} />

@@ -38,6 +38,7 @@ export type IconName =
   | 'trash'
   | 'clock'
   | 'more'
+  | 'menu'
 
 export interface IconProps {
   name: IconName
@@ -303,6 +304,12 @@ export function Icon({ name, size = 16, stroke = 'currentColor', strokeWidth = 1
           <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
           <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
           <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
+        </svg>
+      )
+    case 'menu':
+      return (
+        <svg {...s}>
+          <path d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       )
     default:

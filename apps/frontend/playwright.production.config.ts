@@ -10,6 +10,7 @@ export default defineConfig({
     '**/clean-beta-smoke.spec.ts',
     '**/hydration.spec.ts',
     '**/seo.spec.ts',
+    '**/responsive-header.spec.ts',
   ],
   fullyParallel: false,
   workers: 1,
