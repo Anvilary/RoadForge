@@ -59,7 +59,7 @@ export function SiteFooter() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Non-commercial source available
+            AGPL-3.0-or-later
           </a>
           <span className="dot" aria-hidden="true">·</span>
           <span>© {year} Anvilary Tools</span>

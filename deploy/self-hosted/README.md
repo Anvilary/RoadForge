@@ -44,8 +44,9 @@ deployment, the operator should explicitly own:
 - monitoring, alerting, log retention, incident response, and rollback;
 - representative load testing before depending on the service.
 
-Forking/self-hosting remains subject to the repository's current PolyForm Noncommercial
-License 1.0.0; it does not grant commercial use outside those terms.
+Forking and self-hosting, including commercial use, are permitted under AGPL-3.0-or-later
+subject to its terms. Modified network-accessible deployments must offer corresponding
+source as required by section 13.
 
 ## First deployment
 

@@ -71,8 +71,8 @@ export function FeaturesSection() {
           <p>
             Use the public hosted demo at roadforge.anvilary.tools to evaluate
             RoadForge. For sustained or larger-team use, run a fork or controlled
-            clone on infrastructure you operate under its non-commercial
-            source-available license.
+            clone on infrastructure you operate under its AGPL-3.0-or-later
+            open-source license.
           </p>
         </div>
       </div>

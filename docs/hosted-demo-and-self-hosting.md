@@ -74,10 +74,10 @@ retention/backups follow the operator's documented lifecycle.
 
 ## License boundary
 
-RoadForge is currently distributed under the PolyForm Noncommercial License 1.0.0. Forking
-or self-hosting does not change that license. The current repository license permits the
-source-available non-commercial uses it describes; it does **not** grant commercial use.
-Organizations must review the applicable license before adopting or modifying RoadForge.
+RoadForge is distributed under AGPL-3.0-or-later. Commercial and noncommercial use,
+forking and self-hosting are permitted subject to the license terms. Operators of modified
+network-accessible versions must offer corresponding source to remote users as required
+by section 13. Organizations should review the license before adopting or modifying RoadForge.
 
 ## Related documentation
 

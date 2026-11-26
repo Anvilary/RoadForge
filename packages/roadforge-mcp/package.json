@@ -11,7 +11,8 @@
     "bin",
     "src",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "engines": {
     "node": ">=22 <27"
@@ -27,7 +28,7 @@
     "model-context-protocol",
     "agents"
   ],
-  "license": "PolyForm-Noncommercial-1.0.0",
+  "license": "AGPL-3.0-or-later",
   "homepage": "https://roadforge.anvilary.tools",
   "repository": {
     "type": "git",

@@ -176,6 +176,7 @@ No known boundary may be omitted merely to make the release appear more complete
 - [ ] Release notes include major capabilities, upgrade notes, known boundaries, and verification evidence.
 - [ ] Tag is created on the exact frozen candidate SHA.
 - [ ] Published artifacts, if any, match the tagged source.
+- [ ] Distributions retain applicable license and copyright notices and make exact corresponding source available as required by AGPL-3.0-or-later.
 
 Suggested release-note structure:
 

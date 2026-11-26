@@ -20,12 +20,14 @@ Enable server sync only when you deliberately want sharing and realtime collabor
 > persistence, backups, retention, monitoring, capacity, upgrades, and security configuration.
 > See [Hosted demo and self-hosting](docs/hosted-demo-and-self-hosting.md).
 
-RoadForge is currently distributed under the
-[PolyForm Noncommercial License 1.0.0](LICENSE). That license is source-available
-for non-commercial use and is **not** an OSI-approved open-source license. The
-engineering repository is being prepared for the `0.1.0` baseline independently
-from any future relicensing decision. Forking or self-hosting does not grant commercial use
-outside the current license terms.
+## License
+
+RoadForge is open-source software distributed under the
+[GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)](LICENSE).
+Commercial and noncommercial use, modification, distribution and self-hosting are permitted
+subject to the license terms. Distribution and remote network interaction with modified
+versions are subject to the applicable AGPL corresponding-source obligations.
+Previously published revisions retain the licenses under which they were received.
 
 ## Product Demonstration
 

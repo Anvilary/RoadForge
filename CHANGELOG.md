@@ -5,6 +5,8 @@ Dates use ISO format.
 
 ## Unreleased
 
+- Adopt AGPL-3.0-or-later for current RoadForge source and its MCP package; preserve earlier license grants and update documentation, package metadata and product copy.
+
 ## 0.3.0 - 2026-11-25
 
 ### Public roadmap publishing and embedding
@@ -112,4 +114,4 @@ First supported RoadForge baseline for deliberate public release preparation.
 - Browser-local data can be removed with site storage; important roadmaps should be exported as JSON.
 - `roadforge.anvilary.tools` is a demo/convenience deployment, not a managed backup service.
 - The MCP package remains experimental and reuses roadmap participant credentials.
-- The repository is currently PolyForm Noncommercial source-available software; that license is not OSI-approved open source.
+- At the 0.1.0 baseline, RoadForge used the PolyForm Noncommercial license. That historical release retains its original licensing terms.

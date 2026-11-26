@@ -22,7 +22,7 @@
   },
   "version": "0.3.0",
   "description": "Local-first, accountless roadmap planning for individuals and small teams.",
-  "license": "PolyForm-Noncommercial-1.0.0",
+  "license": "AGPL-3.0-or-later",
   "homepage": "https://roadforge.anvilary.tools",
   "repository": {
     "type": "git",

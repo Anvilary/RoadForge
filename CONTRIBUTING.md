@@ -3,10 +3,11 @@
 RoadForge welcomes focused bug fixes, documentation improvements, accessibility work,
 tests, and well-scoped product improvements.
 
-RoadForge is currently source-available under the
-[PolyForm Noncommercial License 1.0.0](LICENSE). It is not OSI-approved open source,
-and commercial use is not granted by contributing. Any future relicensing decision is
-separate from the contribution workflow described here.
+RoadForge is open-source software under the
+[GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)](LICENSE).
+Commercial and noncommercial use are permitted subject to the license terms.
+By submitting a contribution, you offer that contribution under the repository license
+and confirm you have the necessary rights to do so.
 
 ## The short path
 

@@ -98,7 +98,7 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     expect(githubLink?.textContent).toBe('GitHub')
 
     const licenseLink = footer?.querySelector('a[href="https://github.com/Anvilary/RoadForge#license"]')
-    expect(licenseLink?.textContent).toContain('Non-commercial source available')
+    expect(licenseLink?.textContent).toContain('AGPL-3.0-or-later')
 
     const reportLink = footer?.querySelector('a[title*="Report a problem"]')
     expect(reportLink).not.toBeNull()
@@ -109,7 +109,7 @@ describe('Anvilary Design Parity for Marketing Header and Footer', () => {
     const legalGroup = footer?.querySelector('.footer-legal')
     expect(legalGroup).not.toBeNull()
     expect(legalGroup?.querySelector('a[href="https://github.com/Anvilary/RoadForge#license"]')).not.toBeNull()
-    expect(legalGroup?.textContent).toContain('Non-commercial source available')
+    expect(legalGroup?.textContent).toContain('AGPL-3.0-or-later')
     expect(legalGroup?.textContent).toContain(String(new Date().getFullYear()))
     expect(legalGroup?.textContent).toContain('Anvilary Tools')
   })

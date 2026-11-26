@@ -6,8 +6,8 @@ Hosted deployments serve this feature only once updated to `0.3.0`.
 RoadForge remains local-first. A roadmap stored only in the browser is private. Publishing
 is an explicit owner action after the roadmap has a server copy.
 
-The license remains the PolyForm Noncommercial License 1.0.0. Publishing a roadmap does
-not change that license.
+RoadForge is licensed under AGPL-3.0-or-later. Publishing a roadmap does not change the
+software license or independently license the user's roadmap content.
 
 ## What publishing does
 

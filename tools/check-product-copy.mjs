@@ -42,16 +42,17 @@ const stalePatterns = [
   { label: 'Work in Progress terminology', pattern: /\bwork in progress\b/i },
   { label: 'WIP terminology', pattern: /\bWIP\b/ },
   {
-    label: 'unqualified open-source positioning',
-    pattern: /\b(?:is|as|an)\s+(?:an?\s+)?open[- ]source\b/i,
+    label: 'obsolete noncommercial licensing claim',
+    pattern: /\b(?:PolyForm Noncommercial|non-commercial source available|commercial use is not granted|not OSI-approved open)\b/i,
+    historicalChangelogAllowed: true,
   },
 ]
 
 const requiredStatements = new Map([
   ['README.md', [
-    '0.1.0',
-    'source-available',
-    'PolyForm Noncommercial License 1.0.0',
+    '**Release target:**',
+    'open-source software',
+    'AGPL-3.0-or-later',
     'official demo/reference',
     'Export important roadmaps as JSON',
     'especially for a larger team',
@@ -60,10 +61,9 @@ const requiredStatements = new Map([
     'Release readiness',
   ]],
   ['CONTRIBUTING.md', [
-    'source-available',
-    'PolyForm Noncommercial License 1.0.0',
-    'not OSI-approved open',
-    'commercial use is not granted',
+    'open-source software',
+    'AGPL-3.0-or-later',
+    'Commercial and noncommercial use are permitted',
   ]],
   ['SUPPORT.md', [
     'hosted demo/reference deployment',
@@ -140,7 +140,7 @@ const requiredStatements = new Map([
   ]],
   ['apps/frontend/src/shared/ui/SiteFooter.tsx', [
     'Hosted demo',
-    'Non-commercial source available',
+    'AGPL-3.0-or-later',
     'Fork/self-host for team use',
   ]],
   ['apps/frontend/src/features/sharing/components/ShareModal.tsx', [
@@ -177,8 +177,11 @@ for (const relativePath of currentSurfaces) {
   const content = readFileSync(absolutePath, 'utf8')
   const normalizedContent = content.replace(/\s+/g, ' ')
 
-  for (const { label, pattern } of stalePatterns) {
-    const match = content.match(pattern)
+  for (const { label, pattern, historicalChangelogAllowed } of stalePatterns) {
+    const currentContent = historicalChangelogAllowed && relativePath === 'CHANGELOG.md'
+      ? content.split(/\n## (?!Unreleased\b)/)[0]
+      : content
+    const match = currentContent.match(pattern)
     if (match) {
       const line = content.slice(0, match.index).split('\n').length
       failures.push(`${relativePath}:${line}: ${label}: ${JSON.stringify(match[0])}`)

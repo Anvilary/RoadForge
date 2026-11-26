@@ -74,9 +74,9 @@ reviews should address observable behavior, risks, and tradeoffs rather than con
 
 ## Licensing
 
-The repository currently uses PolyForm Noncommercial 1.0.0. That is a source-available,
-non-OSI license. Any move to an OSI-approved open-source license is a maintainer/legal
-copyright decision and must be performed deliberately; contribution acceptance does not
+The repository is licensed under AGPL-3.0-or-later. Previously published revisions retain
+their original license terms. Any future relicensing decision must respect copyright
+ownership, contributor permissions and existing grants; contribution acceptance does not
 silently change the license.
 
 ## Changes to governance

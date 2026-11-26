@@ -16,8 +16,8 @@ capacity/load testing, upgrades, and incident response. See
 - Feature proposals: open a feature request and explain the user problem.
 - Self-hosting problems: include sanitized topology/version information, never credentials or private roadmap data.
 - Security vulnerabilities: follow `SECURITY.md`; never post exploit details publicly.
-- Commercial licensing: no public commercial license is currently offered. The
-  repository license does not permit commercial use.
+- Licensing: commercial and noncommercial use are permitted under AGPL-3.0-or-later.
+  Operators and distributors must comply with the applicable source-code obligations.
 
 There is no guaranteed response time, uptime commitment, hosted-data recovery commitment,
 capacity commitment, enterprise support contract, or paid support plan for either the demo or

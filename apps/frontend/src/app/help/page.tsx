@@ -157,8 +157,8 @@ export const SECTIONS: SectionData[] = [
         </p>
         <p>
           Forking and self-hosting remain subject to the repository&apos;s current
-          PolyForm Noncommercial License 1.0.0; the current license does not
-          grant commercial use.
+          AGPL-3.0-or-later license, which permits commercial and
+          noncommercial use subject to its terms.
         </p>
       </>
     ),

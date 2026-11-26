@@ -16,7 +16,7 @@ describe('current product copy', () => {
     act(() => root.render(<SiteFooter />))
 
     expect(container.textContent).toContain('Pre-release · An Anvilary product')
-    expect(container.textContent).toContain('Non-commercial source available')
+    expect(container.textContent).toContain('AGPL-3.0-or-later')
     expect(container.textContent).not.toMatch(/\balpha\b/i)
     expect(container.textContent).not.toMatch(/\bWIP\b|work in progress/i)
     act(() => root.unmount())

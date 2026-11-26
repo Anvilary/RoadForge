@@ -66,7 +66,7 @@ describe('SiteFooter document flow and legal grouping', () => {
 
     const licenseLink = legalGroup?.querySelector('a[href="https://github.com/Anvilary/RoadForge#license"]')
     expect(licenseLink).not.toBeNull()
-    expect(licenseLink?.textContent?.trim()).toBe('Non-commercial source available')
+    expect(licenseLink?.textContent?.trim()).toBe('AGPL-3.0-or-later')
 
     expect(legalGroup?.textContent).toContain(`© ${currentYear} Anvilary Tools`)
     expect(legalGroup?.textContent).toContain('·')
